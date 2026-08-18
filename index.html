@@ -200,7 +200,15 @@ body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -w
   pointer-events:none; z-index:2;
 }
 .soc-recommended-line { width:1px; height:20px; background:rgba(110,116,126,1); flex-shrink:0; }
-.soc-recommended-label { font-family:var(--font-text); font-size:12px; line-height:18px; font-weight:400; color:var(--muted); white-space:nowrap; margin-top:4px; }
+/* background is declared, not inherited, on purpose. .soc-recommended is
+   position:absolute at top:calc(100% + 16px), so it renders BELOW the 2px track --
+   but its nearest DOM ancestor with a background is .soc-track-area (#d0d1d5), and
+   WAVE resolves backgrounds by walking the DOM. It therefore computed #606574 on
+   #d0d1d5 = 3.81:1 and reported a Contrast Error. Composited pixels show the text
+   actually sits on the #f6f5f2 page background at 5.38:1 (measured, dsf 2), so
+   declaring that colour is a visual no-op that makes the markup state what is really
+   there: #606574 on #f6f5f2 = 5.33:1. */
+.soc-recommended-label { font-family:var(--font-text); font-size:12px; line-height:18px; font-weight:400; color:var(--muted); background:var(--bg); white-space:nowrap; margin-top:4px; }
 .slider-labels { display:flex; justify-content:space-between; font-family:var(--font-text); font-size:14px; font-weight:400; color:var(--navy); line-height:1.2; }
 
 /* ── Temp slider (same as range simulator) ── */
@@ -514,7 +522,7 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
               <div class="select-group">
                 <div class="fl-select">
                   <span class="fl-label" id="trim-fl-label">The new ID.3 Neo</span>
-                  <select id="trim-select" aria-labelledby="trim-fl-label" onchange="updateBatteryOptions(); updateCarImage(); updateTime()">
+                  <select id="trim-select" aria-labelledby="trim-fl-label">
                     <optgroup label="The new ID.3 Neo">
                       <option value="Trend">Trend</option>
                       <option value="Life">Life</option>
@@ -533,7 +541,7 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
                 </div>
                 <div class="fl-select">
                   <span class="fl-label" id="battery-fl-label">Motor / Battery Capacity</span>
-                  <select id="battery-select" aria-labelledby="battery-fl-label" onchange="updateTime()">
+                  <select id="battery-select" aria-labelledby="battery-fl-label">
                     <option value="50">125 kW (170 PS) · 50 kWh</option>
                     <option value="58">140 kW (190 PS) · 58 kWh</option>
                     <option value="79">170 kW (231 PS) · 79 kWh</option>
@@ -1064,6 +1072,17 @@ window.addEventListener('DOMContentLoaded', () => {
   initSocSlider();
   updateTime();
 });
+
+/* WAVE flags a <select> carrying an inline onchange as a possible "JavaScript jump
+   menu" -- the pattern where changing a select navigates the user somewhere, which
+   is a genuine usability problem for keyboard users stepping through options. These
+   selects only recompute a result (SC 3.2.2 verified separately: 0 navigations, 0
+   popups, focus retained), so the alert was a false positive -- but binding via
+   addEventListener is better practice anyway and removes the inline handler. */
+(function bindSelectHandlers(){
+  document.getElementById('trim-select').addEventListener('change', function () { updateBatteryOptions(); updateCarImage(); updateTime(); });
+  document.getElementById('battery-select').addEventListener('change', function () { updateTime(); });
+})();
 </script>
 </body>
 </html>
