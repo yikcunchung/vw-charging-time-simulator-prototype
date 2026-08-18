@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+<meta name="description" content="Estimate how long your Volkswagen ID. model takes to charge, based on charger type, power, temperature and charge level.">
+<title>Volkswagen Charging Time Simulator</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+@font-face { font-family:'VW Head'; src:url('../range-simulator/site-01/assets/fonts/vwhead-light.woff2') format('woff2'); font-weight:300; font-style:normal; font-display:swap; }
+@font-face { font-family:'VW Head'; src:url('../range-simulator/site-01/assets/fonts/vwhead-regular.woff2') format('woff2'); font-weight:400; font-style:normal; font-display:swap; }
+@font-face { font-family:'VW Head'; src:url('../range-simulator/site-01/assets/fonts/vwhead-bold.woff2') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
+@font-face { font-family:'VW Text'; src:url('../range-simulator/site-01/assets/fonts/vwtext-regular.woff2') format('woff2'); font-weight:400; font-style:normal; font-display:swap; }
+@font-face { font-family:'VW Text'; src:url('../range-simulator/site-01/assets/fonts/vwtext-bold.woff2') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
+
+.grid-container { width:100%; padding-left:calc(100vw/12); padding-right:calc(100vw/12); box-sizing:border-box; }
+
+:root {
+  --bg: rgba(246,245,242,1);
+  --white: #fff;
+  --navy: rgba(27,34,54,1);
+  --navy-dark: rgba(41,48,67,1);
+  --label-blue: rgba(0,30,80,1);
+  --border-light: rgba(208,209,213,1);
+  --border-input: rgba(194,202,207,1);
+  --muted: rgba(96,101,116,1);
+  --track-inactive: rgba(208,209,213,1);
+  --tooltip-bg: rgba(49,56,74,1);
+  --font-text: 'VW Text','Inter',-apple-system,sans-serif;
+  --font-head: 'VW Head','Inter',-apple-system,sans-serif;
+}
+
+body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -webkit-font-smoothing:antialiased; font-size:16px; }
+
+/* ── Topbar ── */
+#topbar { background:white; border-bottom:1px solid var(--border-light); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:8px 0; height:64px; width:100%; flex-shrink:0; position:sticky; top:0; z-index:10; -webkit-font-smoothing:antialiased; color:#293043; }
+.topbar-container { display:flex; align-items:center; justify-content:space-between; width:100%; padding:0 4.16vw; box-sizing:border-box; }
+.topbar-left { display:flex; align-items:center; gap:20px; flex-shrink:0; }
+.topbar-logo-col { display:flex; align-items:center; gap:20px; min-height:40px; flex-shrink:0; }
+.topbar-logo-col svg { display:block; width:32px; height:32px; }
+.topbar-tabs-col { display:flex; align-items:center; min-height:40px; }
+.topbar-tabs { display:flex; gap:20px; align-items:center; flex-shrink:0; }
+.topbar-tab { display:flex; align-items:center; justify-content:center; padding:8px 0; flex-shrink:0; font-family:'VW Text','Inter',-apple-system,sans-serif; font-weight:700; font-size:16px; line-height:1.2; color:#293043; white-space:nowrap; cursor:pointer; }
+@media (max-width:959px) { .topbar-tab { display:none; } }
+.topbar-actions-col { display:flex; flex-direction:column; align-items:flex-end; justify-content:center; min-height:40px; flex-shrink:0; }
+.topbar-actions { display:flex; gap:16px; align-items:center; flex-shrink:0; }
+@media (max-width:959px) { .topbar-actions { gap:12px; } }
+.topbar-dealer { display:flex; align-items:center; max-width:150px; flex-shrink:0; }
+.topbar-dealer-text { font-family:'VW Text','Inter',-apple-system,sans-serif; font-weight:400; font-size:14px; line-height:1.2; color:#293043; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1 0 0; min-width:1px; }
+@media (max-width:959px) { .topbar-dealer-text { display:none; } }
+.topbar-cta { width:32px; height:32px; flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.topbar-cta svg { width:24px; height:24px; display:block; flex-shrink:0; }
+
+/* ── Content ── */
+#content { background:var(--bg); }
+.range-simulator { padding-inline:8.33vw; padding-bottom:56px; }
+
+/* Header */
+.rs-header { padding-top:40px; padding-bottom:40px; display:flex; align-items:flex-start; gap:20px; }
+.rs-header-icon { width:48px; height:48px; flex-shrink:0; display:block; }
+.rs-headline { font-family:var(--font-head); font-size:34px; font-weight:300; line-height:1.2; color:var(--navy); }
+
+/* Grid */
+.section-container { display:flex; flex-direction:column; gap:24px; }
+.input-section {}
+.right-col { display:flex; flex-direction:column; gap:24px; }
+.output-panel { display:flex; flex-direction:column; gap:24px; }
+.disclaimer { margin-top:40px; }
+.model-selection {}
+.result-section { margin-top:0; }
+.cta-button { margin-top:0; }
+
+@media (min-width:960px) {
+  .section-container { display:grid; grid-template:"inputs right" / 4.2fr 2.45fr; column-gap:4.16vw; row-gap:0; align-items:start; position:relative; }
+  .input-section { grid-area:inputs; }
+  .right-col { grid-area:right; position:sticky; top:76px; bottom:0; align-self:start; z-index:1; }
+  .disclaimer { margin-top:40px; }
+}
+
+/* Input section card */
+.input-section { border-radius:20px; background:linear-gradient(167deg, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0.20) 60%, rgba(255,255,255,0.00) 100%); box-shadow:0 12px 24px 0 rgba(49,25,2,0.08); padding:40px; display:flex; flex-direction:column; gap:40px; }
+
+/* Responsive */
+@media (max-width:959px) {
+  .right-col { display:contents; }
+  .result-section { margin-top:0; }
+  .cta-button { margin-top:0; }
+  .disclaimer { margin-top:24px; }
+  .rs-headline { font-size:28px; }
+}
+@media (max-width:959px) {
+  .input-section { border-radius:0; background:none; box-shadow:none; padding:0; }
+}
+@media (max-width:1279px) { .rs-header { padding-top:32px; padding-bottom:32px; } }
+@media (max-width:559px) { .input-section { gap:32px; } .section-container { gap:32px; } }
+@media (max-width:767px) { .rs-header { padding-top:28px; padding-bottom:28px; } #topbar { height:56px; padding:6px 0; } }
+@media (max-width:439px) { .rs-header { gap:12px; padding-top:24px; padding-bottom:24px; } .rs-header-icon { width:36px; height:36px; } .input-section { gap:28px; } .topbar-tab { display:none; } }
+@media (max-width:374px) { .input-section { gap:24px; } }
+
+/* Combo */
+.combo { display:flex; flex-direction:column; gap:12px; }
+.question { display:flex; align-items:center; gap:0; flex-wrap:nowrap; }
+.question-label { font-family:var(--font-text); font-size:16px; font-weight:700; line-height:1.2; color:var(--navy); }
+.q-icon-btn { position:relative; display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; color:rgb(41,48,67); background:transparent; border:none; padding:0; cursor:pointer; flex-shrink:0; margin-left:4px; vertical-align:middle; -webkit-tap-highlight-color:transparent; }
+.q-icon { width:24px; height:24px; display:block; pointer-events:none; }
+
+/* ── Button groups ── */
+.btn-group { display:flex; gap:12px; width:100%; }
+
+.btn-card {
+  flex:1; min-width:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:4px; padding:16px;
+  border:none; border-radius:12px;
+  box-shadow:0 0 0 1px rgba(110,116,126,1) inset;
+  background:transparent; cursor:pointer;
+  font-family:var(--font-text); font-size:14px; font-weight:400;
+  color:var(--navy); line-height:1.2; text-align:center;
+  transition:box-shadow 0.2s, color 0.2s, background 0.2s;
+}
+.btn-card.active { box-shadow:0 0 0 2px #997F67 inset; }
+.btn-card.disabled { box-shadow:0 0 0 1px rgba(208,209,213,1) inset; color:rgba(96,101,116,1); cursor:not-allowed; }
+.btn-card img { width:24px; height:24px; display:block; pointer-events:none; }
+.btn-card.disabled img { opacity:0.35; }
+.btn-card:hover:not(.disabled):not(.active) { box-shadow:0 0 0 1px rgba(153,127,103,1) inset; color:rgba(115,62,1,1); }
+
+.btn-pill {
+  flex:1; min-width:0;
+  display:flex; align-items:center; justify-content:center;
+  padding:8px 6px;
+  border:none; border-radius:12px;
+  box-shadow:0 0 0 1px rgba(110,116,126,1) inset;
+  background:transparent; cursor:pointer;
+  font-family:var(--font-text); font-size:14px; font-weight:400;
+  color:var(--navy); line-height:1.2; white-space:nowrap;
+  transition:box-shadow 0.2s, color 0.2s, background 0.2s;
+}
+.btn-pill.active { box-shadow:0 0 0 2px #997F67 inset; }
+.btn-pill.disabled { box-shadow:0 0 0 1px rgba(208,209,213,1) inset; color:rgba(96,101,116,1); cursor:not-allowed; }
+.btn-pill:hover:not(.disabled):not(.active) { box-shadow:0 0 0 1px rgba(153,127,103,1) inset; color:rgba(115,62,1,1); }
+
+@media (max-width:767px) {
+  .btn-group { overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .btn-group::-webkit-scrollbar { display:none; }
+  .btn-card { flex:none; flex-direction:row; padding:8px 12px; gap:6px; }
+  .btn-pill { flex:none; padding:8px 12px; }
+}
+
+/* Divider */
+.combo-divider { height:1px; background:rgba(110,116,126,1); }
+
+/* ── Floating label select ── */
+.fl-select { position:relative; overflow:visible; }
+.fl-select select { width:100%; height:50px; padding:20px 48px 0 16px; font-family:var(--font-text); font-size:16px; font-weight:400; color:rgba(0,14,38,1); background:transparent; border:1px solid rgb(110,116,126); border-radius:8px; appearance:none; cursor:pointer; outline:none; text-overflow:ellipsis; box-sizing:border-box; transition:border-color 0.15s; }
+.fl-select:hover select { border-color:rgba(153,127,103,1); color:rgba(115,62,1,1); }
+.fl-select:hover .fl-label { color:rgba(115,62,1,1); max-width:100%; white-space:normal; overflow-wrap:break-word; text-overflow:clip;}
+.fl-select:hover .fl-chevron svg path { fill:rgba(115,62,1,1); }
+.fl-label { position:absolute; top:6px; left:16px; font-family:var(--font-text); font-size:12px; line-height:18px; font-weight:400; color:rgba(0,30,80,1); pointer-events:none; overflow:hidden;    transition:color 0.15s; max-width:100%; white-space:normal; overflow-wrap:break-word; text-overflow:clip;}
+.fl-chevron { position:absolute; right:8px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center; justify-content:center; width:32px; height:32px; z-index:1; }
+.fl-chevron svg path { transition:fill 0.15s; }
+#tyre-select { padding:0 48px 0 16px; line-height:50px; }
+.select-group { display:flex; gap:12px; }
+.select-group .fl-select { flex:1; min-width:0; }
+
+/* ── SOC dual slider ── */
+.soc-wrap { position:relative; padding-top:44px; padding-bottom:29px; }
+.soc-track-area { position:relative; height:2px; background:rgba(208,209,213,1); border-radius:8px; margin:0 18px 12px; }
+.soc-active-track { position:absolute; top:0; bottom:0; background:#997f67; border-radius:4px; }
+.soc-thumb {
+  position:absolute; top:50%; transform:translate(-50%,-50%);
+  width:18px; height:18px;
+  background:var(--navy-dark); border-radius:50%;
+  cursor:ew-resize; z-index:3;
+  box-shadow:0 1px 4px rgba(0,0,0,0.25);
+  user-select:none; touch-action:none;
+  border:none; padding:0; outline:none;
+}
+.soc-tooltip {
+  position:absolute; bottom:calc(100% + 8px);
+  background:var(--tooltip-bg); color:#fff;
+  font-family:var(--font-text); font-size:14px; font-weight:700; line-height:1.2;
+  padding:8px 12px; border-radius:4px; white-space:nowrap;
+  left:50%; transform:translateX(-50%); pointer-events:none;
+}
+.soc-tooltip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:6px solid transparent; border-top-color:var(--tooltip-bg); }
+.soc-tooltip.align-left { left:-9px; transform:none; }
+.soc-tooltip.align-left::after { left:14px; transform:none; }
+.soc-tooltip.align-right { left:auto; right:-9px; transform:none; }
+.soc-tooltip.align-right::after { left:auto; right:14px; transform:none; }
+/* Figma 7481:90843 / "Recommended Marker": the tick hangs below the track —
+   Pointer y=67..87 and Marker Label y=91..109, against a track bottom of y=51.
+   So 16px clearance, a 20px tick, then a 4px gap. The old rule centred the whole
+   stack on the track (translate -50% Y), which put the tick entirely above the
+   track and the label below it, with the track bisecting the marker. */
+.soc-recommended {
+  position:absolute; top:calc(100% + 16px); transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center;
+  pointer-events:none; z-index:2;
+}
+.soc-recommended-line { width:1px; height:20px; background:rgba(110,116,126,1); flex-shrink:0; }
+.soc-recommended-label { font-family:var(--font-text); font-size:12px; line-height:18px; font-weight:400; color:var(--muted); white-space:nowrap; margin-top:4px; }
+.slider-labels { display:flex; justify-content:space-between; font-family:var(--font-text); font-size:14px; font-weight:400; color:var(--navy); line-height:1.2; }
+
+/* ── Temp slider (same as range simulator) ── */
+.slider-wrap { position:relative; padding-top:44px; }
+.slider-track-area { position:relative; height:4px; background:linear-gradient(270deg, #E4002C 0%, #FFD100 25%, #D5AE00 50%, #3064D0 75%, #4C0789 100%); border-radius:8px; margin:0 18px 10px; }
+input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); left:-18px; right:-18px; width:calc(100% + 36px); height:44px; opacity:0; cursor:pointer; z-index:2; margin:0; }
+.slider-thumb { position:absolute; top:50%; transform:translate(-50%,-50%); width:18px; height:18px; background:var(--navy-dark); border-radius:50%; pointer-events:none; z-index:1; box-shadow:0 1px 4px rgba(0,0,0,0.25); }
+.slider-tooltip { display:inline-flex; flex-direction:column; align-items:center; gap:4px; position:absolute; bottom:calc(100% + 8px); pointer-events:none; background:var(--tooltip-bg); color:#fff; font-family:var(--font-text); font-size:14px; font-weight:700; line-height:1.2; padding:8px 12px; border-radius:4px; white-space:nowrap; left:50%; transform:translateX(-50%); }
+.slider-tooltip.align-left { left:-9px; transform:none; }
+.slider-tooltip.align-right { left:auto; right:-9px; transform:none; }
+.slider-tooltip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:6px solid transparent; border-top-color:var(--tooltip-bg); }
+.slider-tooltip.align-left::after { left:14px; transform:none; }
+.slider-tooltip.align-right::after { left:auto; right:14px; transform:none; }
+.slider-labels { margin-top:10px; }
+
+/* ── Model Selection ── */
+.model-selection { display:flex; flex-direction:column; gap:4px; background:var(--bg); }
+.model-combo { display:flex; flex-direction:column; gap:12px; }
+.model-frame { display:flex; flex-direction:column; gap:4px; }
+.vehicle-asset { width:100%; aspect-ratio:2/1; background:transparent; overflow:hidden; }
+.vehicle-asset img { width:100%; height:100%; object-fit:cover; display:block; }
+.model-content { display:flex; flex-direction:column; gap:12px; }
+.model-disclaimer { font-family:var(--font-text); font-size:14px; font-weight:400; color:var(--navy); line-height:1.5; }
+.tech-link { display:inline-flex; flex-direction:column; gap:1px; cursor:pointer; width:fit-content; }
+.tech-link-label { font-family:var(--font-text); font-size:16px; font-weight:400; color:var(--navy-dark); line-height:1.2; }
+.tech-link-stroke { height:1px; background:var(--navy-dark); }
+
+/* ── Result Section ── */
+.result-section { background:var(--navy); border-radius:12px; padding:24px; display:flex; flex-direction:column; gap:24px; width:100%; }
+@media (max-width:767px) { .result-section { padding:20px; } }
+.result-header { display:flex; flex-direction:column; gap:4px; }
+.result-headline-row { display:flex; align-items:flex-start; gap:8px; }
+.result-headline-label { font-family:var(--font-text); font-size:16px; font-weight:700; color:#fff; line-height:1.2; }
+.result-info-icon { width:24px; height:24px; flex-shrink:0; display:none; }
+
+.time-display { font-family:var(--font-head); font-size:52px; font-weight:700; color:#fff; line-height:1; display:flex; align-items:baseline; gap:0; transition:opacity 0.25s; }
+@media (max-width:767px) { .time-display { font-size:44px; } }
+@media (max-width:439px) { .time-display { font-size:38px; } }
+@media (max-width:374px) { .time-display { font-size:34px; } }
+.slot-digit { display:inline-block; overflow:hidden; height:1em; vertical-align:top; }
+.slot-reel { display:flex; flex-direction:column; transition:transform 1.2s cubic-bezier(0.22,1,0.36,1); }
+.slot-reel span { display:block; height:1em; line-height:1; text-align:center; }
+
+/* ── CTA ── */
+.cta-button { width:100%; height:44px; border:1px solid var(--navy-dark); border-radius:100px; background:transparent; color:var(--navy-dark); font-family:var(--font-text); font-size:16px; font-weight:400; padding:8px 32px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px; transition:background 0.15s, color 0.15s; }
+.cta-button:hover { background:var(--button-secondary-hover, #CCBDAB); border-color:transparent; color:var(--navy); }
+.cta-button--inverted-secondary { background:transparent; border-color:#fff; color:#fff; }
+.cta-button--inverted-secondary:hover { background:rgba(255,255,255,0.12); border-color:#fff; color:#fff; }
+
+/* ── Sticky result bar ── */
+.sticky-result { display:none; }
+@media (max-width:959px) {
+  .sticky-result { display:block; position:fixed; bottom:0; left:0; right:0; background:var(--navy); padding:24px 8.33vw; z-index:100; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.22,1,0.36,1); pointer-events:none; }
+  .sticky-result.visible { transform:translateY(0); pointer-events:auto; }
+}
+
+/* ── Disclaimer ── */
+.disclaimer { display:flex; gap:32px; margin-top:40px; }
+.disclaimer-num { font-family:var(--font-text); font-size:14px; font-weight:400; color:var(--muted); line-height:24px; flex-shrink:0; }
+.disclaimer-copy { font-family:var(--font-text); font-size:14px; font-weight:400; color:var(--muted); line-height:1.5; }
+
+/* ---- a11y additions (WCAG 2.2 AA) ---- */
+/* SC 2.4.7: these three drew 0 indicator pixels. .fl-select select sets
+   outline:none, and #temp-slider is opacity:0 so its UA ring is transparent. */
+.fl-select select:focus-visible { outline:2px solid var(--navy-dark,#1B2236); outline-offset:2px; }
+input[type="range"]:focus-visible ~ .slider-thumb {
+  outline:2px solid var(--navy-dark,#1B2236); outline-offset:3px; border-radius:50%;
+}
+.soc-thumb:focus-visible { outline:2px solid var(--navy-dark,#1B2236); outline-offset:3px; }
+/* SC 2.5.8: the thumbs are 18x18 (324px^2 against 576 required) and in the
+   adjacent state sit 6px apart, so the spacing exception fails too. A transparent
+   pseudo-element gives a 24x24 target without changing anything visible. */
+/* NB: no position:relative here — .soc-thumb is already position:absolute above,
+   which is the containing block ::before needs. Setting relative overrode that,
+   dropped both thumbs into normal flow, and left #soc-thumb-to rendering 18px
+   below the track (it stacked under #soc-thumb-from). */
+.soc-thumb::before {
+  content:''; position:absolute; left:50%; top:50%;
+  width:24px; height:24px; transform:translate(-50%,-50%);
+}
+/* SC 2.5.7: the track is now a single-pointer target, so it must accept the tap. */
+#soc-track { cursor:pointer; }
+/* SC 2.4.11: the sticky bar is 105-109px and covered up to 14 of 22 tab stops. */
+html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
+/* SC 1.4.11: rgb(110,116,126) at 2.29-2.41:1 was the only boundary of 13 buttons
+   and 2 selects. rgb(110,116,126) measures 3.35:1 on #F6F5F2. */
+.sr-only {
+  position:absolute; width:1px; height:1px; margin:-1px; padding:0;
+  overflow:hidden; clip:rect(0,0,0,0); clip-path:inset(50%);
+  border:0; white-space:nowrap;
+}
+@media (max-width:959px) { .simulator, .charging-simulator { padding-bottom:160px; } }
+
+/* SC 2.4.1: skip link, visually hidden until focused */
+.skip-link {
+  position:absolute; left:8px; top:-40px; z-index:9999;
+  background:#1B2236; color:#fff; padding:8px 16px; border-radius:0 0 8px 8px;
+  font-family:var(--font-text,sans-serif); font-size:14px; text-decoration:none;
+  transition:top 0.15s;
+}
+.skip-link:focus { top:0; }
+
+/* SC 1.4.10 Reflow: .btn-group was overflow-x:auto with scrollbar-width:none, so at
+   320px five options — including the SELECTED one — sat off-screen behind a
+   deliberately suppressed scrollbar, with no cue that more existed. Wrapping keeps
+   every choice reachable without horizontal scrolling. */
+@media (max-width: 959px) {
+  .btn-group {
+    overflow-x: visible !important;
+    flex-wrap: wrap !important;
+    row-gap: 8px;
+  }
+  .btn-group .btn-card, .btn-group .btn-pill { flex: 0 1 auto !important; }
+}
+/* SC 2.5.8: the 18x18 thumbs can be driven to adjacent values, putting their
+   centres 2.9px apart so even the 24px Spacing exception fails. MIN_SOC_GAP in the
+   script keeps them >=24px apart in value space; this keeps the hit area honest. */
+.soc-thumb { touch-action: none; }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to main content</a>
+
+<!-- TOPBAR -->
+<div id="topbar" role="banner">
+  <div class="topbar-container">
+    <div class="topbar-left">
+      <div class="topbar-logo-col">
+        <div style="width:32px;height:32px;flex-shrink:0;">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15.9998 0.666626C24.4877 0.666626 31.3336 7.51169 31.3337 15.9996C31.3337 24.4877 24.4879 31.3336 15.9998 31.3336C7.51181 31.3334 0.666748 24.4876 0.666748 15.9996C0.666923 7.5118 7.51192 0.6668 15.9998 0.666626ZM20.8738 26.8971C20.7643 27.1161 20.6544 27.2809 20.3806 27.2809C20.1071 27.2807 19.9979 27.116 19.8884 26.8971L16.1648 18.7379C16.11 18.6832 16.1093 18.5739 15.9998 18.5739C15.9451 18.5741 15.8903 18.6287 15.8357 18.7379L12.1667 26.8971C12.0572 27.1161 11.9474 27.2809 11.6736 27.2809C11.4 27.2808 11.2909 27.1161 11.1814 26.8971L3.29565 11.5641C2.80283 12.9878 2.52909 14.4664 2.52905 15.9996C2.52905 23.3924 8.60705 29.5258 15.9998 29.526C23.3926 29.526 29.4714 23.3925 29.5261 15.9996C29.5261 14.4117 29.2523 12.933 28.7595 11.5641L20.8738 26.8971ZM17.6433 14.6862C17.5338 14.905 17.4237 14.9596 17.2595 14.9596H14.741C14.5768 14.9596 14.4666 14.9049 14.3572 14.6862L9.48315 4.17151C7.45707 5.3215 5.70447 6.96481 4.49976 8.93616L11.4001 22.1881C11.4548 22.2429 11.4549 22.3521 11.5642 22.3522C11.6736 22.3522 11.6737 22.2429 11.7283 22.1881L14.3572 16.3834C14.4667 16.1644 14.5767 16.109 14.741 16.109H17.2595C17.4238 16.109 17.5338 16.1644 17.6433 16.3834L20.2712 22.1881C20.326 22.2429 20.3268 22.3522 20.4363 22.3522C20.4909 22.3519 20.5457 22.2973 20.6003 22.1881L27.4451 8.93616C26.2403 6.96473 24.4879 5.32151 22.4617 4.17151L17.6433 14.6862ZM15.9998 2.47424C14.4665 2.47428 12.9878 2.74802 11.6189 3.24084L15.8357 12.3307C15.8904 12.3854 15.8906 12.4945 15.9998 12.4948C16.1093 12.4948 16.11 12.3855 16.1648 12.3307L20.3806 3.24084C19.0116 2.74804 17.533 2.47424 15.9998 2.47424Z" fill="#293043"/>
+          </svg>
+        </div>
+      </div>
+      <div class="topbar-tabs-col">
+        <div class="topbar-tabs">
+          <div class="topbar-tab">Menu</div>
+          <div class="topbar-tab">Models</div>
+          <div class="topbar-tab">Configure</div>
+          <div class="topbar-tab">Stock cars</div>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-actions-col">
+      <div class="topbar-actions">
+        <div class="topbar-dealer">
+          <p class="topbar-dealer-text">Select dealer</p>
+          <div class="topbar-cta" style="width:32px;height:32px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12.0002 0.961914C14.3662 0.96195 16.63 1.67121 18.3206 3.09082C20.0308 4.52704 21.093 6.64221 21.093 9.29102C21.093 10.7275 20.5566 12.2315 19.8274 13.623C19.0905 15.0293 18.1107 16.4049 17.1213 17.6064C16.1305 18.8098 15.1114 19.8615 14.2786 20.6191C13.864 20.9963 13.4826 21.3131 13.1643 21.542C13.0068 21.6552 12.8464 21.7607 12.6936 21.8418C12.5896 21.897 12.3202 22.0371 12.0002 22.0371C11.6766 22.0371 11.4053 21.8935 11.302 21.8379C11.149 21.7556 10.9887 21.6488 10.8313 21.5342C10.5132 21.3026 10.1314 20.9826 9.71704 20.6016C8.88492 19.8363 7.86617 18.7761 6.87622 17.5674C5.88774 16.3604 4.90939 14.9821 4.1731 13.582C3.44539 12.1982 2.9075 10.7053 2.90747 9.29102C2.90747 6.64221 3.96972 4.52704 5.67993 3.09082C7.37049 1.67129 9.63428 0.961914 12.0002 0.961914ZM12.0002 2.96191C10.0166 2.96191 8.23432 3.558 6.96606 4.62305C5.71742 5.67165 4.90747 7.22117 4.90747 9.29102C4.90751 10.2359 5.28052 11.3905 5.9436 12.6514C6.59819 13.896 7.49062 15.16 8.42407 16.2998C9.35607 17.4378 10.3105 18.43 11.0715 19.1299C11.4504 19.4783 11.7687 19.7429 12.0032 19.9141C12.2373 19.7452 12.5546 19.4838 12.9329 19.1396C13.6932 18.4479 14.6464 17.4666 15.5774 16.3359C16.51 15.2033 17.4019 13.9432 18.0559 12.6953C18.7175 11.4328 19.093 10.2639 19.093 9.29102C19.093 7.22127 18.283 5.67165 17.0344 4.62305C15.7662 3.55801 13.9838 2.96195 12.0002 2.96191ZM12.0002 5.98145C13.6627 5.98147 15.0236 7.32096 15.0237 8.98926C15.0237 10.6576 13.6627 11.997 12.0002 11.9971C10.3377 11.9971 8.97681 10.6576 8.97681 8.98926C8.97684 7.32095 10.3378 5.98145 12.0002 5.98145ZM12.0002 7.98145C11.4281 7.98145 10.9768 8.43972 10.9768 8.98926C10.9768 9.53882 11.428 9.99707 12.0002 9.99707C12.5724 9.99705 13.0237 9.53881 13.0237 8.98926C13.0236 8.43973 12.5724 7.98147 12.0002 7.98145Z" fill="#293043"/></svg>
+          </div>
+        </div>
+        <div class="topbar-cta" style="width:32px;height:32px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22.7715 21.6013L17.18 15.6221C18.4045 14.0058 19.0513 12.0254 19.017 9.99796C19.0555 8.80563 18.8491 7.61807 18.4105 6.50869C17.9719 5.39931 17.3103 4.3917 16.4668 3.54815C15.6232 2.70461 14.6156 2.04307 13.5062 1.60443C12.3969 1.16579 11.2093 0.959379 10.017 0.997955C8.82374 0.955887 7.63463 1.15991 6.52367 1.59731C5.4127 2.03472 4.40368 2.69614 3.55942 3.5404C2.71515 4.38467 2.05373 5.39369 1.61632 6.50465C1.17892 7.61562 0.9749 8.80473 1.01697 9.99796C0.973574 11.1915 1.17668 12.3812 1.61362 13.4928C2.05056 14.6044 2.71194 15.6139 3.55647 16.4585C4.40101 17.303 5.41057 17.9644 6.52214 18.4013C7.6337 18.8382 8.8234 19.0414 10.017 18.998C12.1035 19.0237 14.1365 18.338 15.7811 17.0537L21.3102 22.9665L22.7715 21.6013ZM10.0173 16.998C9.08657 17.0411 8.15711 16.8895 7.28832 16.553C6.41952 16.2164 5.6305 15.7023 4.97169 15.0435C4.31288 14.3847 3.79878 13.5957 3.46225 12.7269C3.12572 11.8581 2.97416 10.9287 3.01727 9.99796C2.97416 9.06726 3.12572 8.1378 3.46225 7.269C3.79878 6.40021 4.31288 5.61119 4.97169 4.95238C5.6305 4.29357 6.41952 3.77947 7.28832 3.44293C8.15711 3.1064 9.08657 2.95485 10.0173 2.99796C10.948 2.95485 11.8774 3.1064 12.7462 3.44293C13.615 3.77947 14.404 4.29357 15.0628 4.95238C15.7217 5.61119 16.2358 6.40021 16.5723 7.269C16.9088 8.1378 17.0604 9.06726 17.0173 9.99796C17.0604 10.9287 16.9088 11.8581 16.5723 12.7269C16.2358 13.5957 15.7217 14.3848 15.0629 15.0436C14.4041 15.7024 13.615 16.2165 12.7462 16.553C11.8774 16.8895 10.948 17.0411 10.0173 16.998V16.998Z" fill="#293043"/></svg>
+        </div>
+        <div class="topbar-cta" style="width:32px;height:32px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.9996 0.999756C18.3736 0.999756 22.9996 5.62576 22.9996 11.9998C22.9996 18.3738 18.3736 22.9998 11.9996 22.9998C5.62563 22.9998 0.999634 18.3738 0.999634 11.9998C0.999634 5.62576 5.62563 0.999756 11.9996 0.999756ZM11.9996 2.99976C6.70163 2.99976 2.99963 6.70076 2.99963 11.9998C2.99963 13.8766 3.4714 15.5475 4.30725 16.9294C5.04526 15.7615 6.5176 15.1295 8.29358 14.3835L8.93616 14.1121L9.71936 15.9519L9.06897 16.2273C7.05497 17.0723 5.99674 17.5542 5.82874 18.3992C5.80678 18.505 5.78818 18.6107 5.76721 18.7156C7.33721 20.1576 9.48563 20.9998 11.9996 20.9998C14.5136 20.9998 16.6621 20.1585 18.2321 18.7175C18.2111 18.6107 18.1925 18.506 18.1705 18.3992C18.0025 17.5552 16.9443 17.0733 14.9313 16.2273L14.2789 15.9519L15.0612 14.1121L15.7057 14.3835C17.4826 15.1295 18.954 15.7615 19.693 16.9304C20.5278 15.5475 20.9996 13.8766 20.9996 11.9998C20.9996 6.70076 17.2986 2.99976 11.9996 2.99976ZM11.9996 4.99976C14.5646 4.99976 16.4995 6.93486 16.4996 9.49976C16.4996 12.0648 14.5646 13.9998 11.9996 13.9998C9.43483 13.9996 7.49963 12.0646 7.49963 9.49976C7.49973 6.93499 9.4349 4.99996 11.9996 4.99976ZM11.9996 6.99976C10.5279 6.99994 9.49973 8.028 9.49963 9.49976C9.49963 10.9716 10.5278 11.9996 11.9996 11.9998C13.4716 11.9998 14.4996 10.9718 14.4996 9.49976C14.4995 8.02786 13.4716 6.99976 11.9996 6.99976Z" fill="#293043"/></svg>
+        </div>
+        <div class="topbar-cta" style="width:32px;height:32px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.7998 21C10.6282 21 11.2998 21.6716 11.2998 22.5C11.2998 23.3284 10.6282 24 9.7998 24C8.97149 23.9999 8.2998 23.3283 8.2998 22.5C8.2998 21.6717 8.97149 21.0001 9.7998 21ZM18.7998 21C19.6282 21 20.2998 21.6716 20.2998 22.5C20.2998 23.3284 19.6282 24 18.7998 24C17.9715 23.9999 17.2998 23.3283 17.2998 22.5C17.2998 21.6717 17.9715 21.0001 18.7998 21ZM4.7002 4H22.2998C22.6997 4 22.9999 4.39987 23 4.7998V4.90039L21.2002 14.4004C21.1001 14.7003 20.7999 15 20.5 15H7.09961L7.7998 18H20V20H6.2002L2.40039 3H0V1H4L4.7002 4ZM6.7002 13H19.4004L20.7002 6H5.09961L6.7002 13ZM10 11H8V8H10V11ZM14 11H12V8H14V11ZM18 11H16V8H18V11Z" fill="#293043"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div id="content" role="main" tabindex="-1">
+  <div class="range-simulator">
+
+    <div class="rs-header">
+      <img class="rs-header-icon" src="assets/icons/icon-battery-charging.svg" alt="">
+      <h1 class="rs-headline">The new charging time simulator from Volkswagen:</h1>
+    </div>
+
+    <div class="section-container">
+
+      <!-- INPUT SECTION -->
+      <div class="input-section">
+
+        <!-- Q1: Where to charge -->
+        <div class="combo">
+          <div class="question">
+            <span class="question-label"><span id="q-location">Where would you like to charge your vehicle?</span> <button class="q-icon-btn" aria-label="More information: Where would you like to charge your vehicle"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button></span>
+          </div>
+          <div class="btn-group" id="location-group" role="radiogroup" aria-labelledby="q-location">
+            <button class="btn-card active" data-val="home" onclick="selectLocation(this)">
+              <img src="assets/icons/icon-home.svg" width="24" height="24" alt="">
+              At home
+            </button>
+            <button class="btn-card" data-val="work" onclick="selectLocation(this)">
+              <img src="assets/icons/icon-workplace.svg" width="24" height="24" alt="">
+              Workplace
+            </button>
+            <button class="btn-card" data-val="public" onclick="selectLocation(this)">
+              <img src="assets/icons/icon-city.svg" width="24" height="24" alt="">
+              Public
+            </button>
+            <button class="btn-card" data-val="motorway" onclick="selectLocation(this)">
+              <img src="assets/icons/icon-motorway.svg" width="24" height="24" alt="">
+              Motorway
+            </button>
+          </div>
+        </div>
+
+        <!-- Q2: Charger type -->
+        <div class="combo">
+          <div class="question">
+            <span class="question-label"><span id="q-charger">Which type of charger will you use?</span> <button class="q-icon-btn" aria-label="More information: Which type of charger will you use"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button></span>
+          </div>
+          <div class="btn-group" id="charger-group" role="radiogroup" aria-labelledby="q-charger">
+            <button class="btn-card" data-val="socket" onclick="selectCharger(this)">
+              <img src="assets/icons/icon-socket.svg" width="24" height="24" alt="">
+              Household socket
+            </button>
+            <button class="btn-card active" data-val="wallbox" onclick="selectCharger(this)">
+              <img src="assets/icons/icon-wallbox.svg" width="24" height="24" alt="">
+              Wallbox (AC)
+            </button>
+            <button class="btn-card disabled" data-val="dc" onclick="selectCharger(this)">
+              <img src="assets/icons/icon-charging-station.svg" width="24" height="24" alt="">
+              Charging station (DC)
+            </button>
+          </div>
+        </div>
+
+        <!-- Q3: Charging power -->
+        <div class="combo">
+          <div class="question">
+            <span class="question-label"><span id="q-power">What will be the charging power?</span> <button class="q-icon-btn" aria-label="More information: What will be the charging power"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button></span>
+          </div>
+          <div class="btn-group" id="power-group" role="radiogroup" aria-labelledby="q-power">
+            <button class="btn-pill disabled" data-val="2.3" onclick="selectPower(this)">2.3 kW</button>
+            <button class="btn-pill disabled" data-val="7.2" onclick="selectPower(this)">7.2 kW</button>
+            <button class="btn-pill active" data-val="11" onclick="selectPower(this)">11 kW</button>
+            <button class="btn-pill" data-val="22" onclick="selectPower(this)">22 kW</button>
+            <button class="btn-pill disabled" data-val="50" onclick="selectPower(this)">50 kW</button>
+            <button class="btn-pill disabled" data-val="150" onclick="selectPower(this)">150 kW</button>
+          </div>
+        </div>
+
+        <div class="combo-divider"></div>
+
+        <!-- Q4: SOC range -->
+        <div class="combo">
+          <div class="question">
+            <span class="question-label"><span id="q-soc">What is your current and desired charge level?</span> <button class="q-icon-btn" aria-label="More information: What is your current and desired charge level"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button></span>
+          </div>
+          <div class="soc-wrap" id="soc-wrap">
+            <div class="soc-track-area" id="soc-track">
+              <div class="soc-active-track" id="soc-active"></div>
+              <!-- Recommended marker at 80% -->
+              <div class="soc-recommended" id="soc-recommended">
+                <div class="soc-recommended-line"></div>
+                <span class="soc-recommended-label">Recommended</span>
+              </div>
+              <!-- Left thumb -->
+              <div class="soc-thumb" id="soc-thumb-from" style="left:20%" role="slider" tabindex="0"
+                   aria-label="Current charge level" aria-valuemin="0" aria-valuemax="100"
+                   aria-valuenow="20" aria-valuetext="20 percent">
+                <div class="soc-tooltip" id="soc-tip-from">20%</div>
+              </div>
+              <!-- Right thumb -->
+              <div class="soc-thumb" id="soc-thumb-to" style="left:80%" role="slider" tabindex="0"
+                   aria-label="Desired charge level" aria-valuemin="0" aria-valuemax="100"
+                   aria-valuenow="80" aria-valuetext="80 percent">
+                <div class="soc-tooltip" id="soc-tip-to">80%</div>
+              </div>
+            </div>
+            <div class="slider-labels">
+              <span>0 %</span><span>100 %</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Q5: Temperature -->
+        <div class="combo">
+          <div class="question">
+            <span class="question-label">What is the outside temperature?<button class="q-icon-btn" aria-label="More information: What is the outside temperature"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button></span>
+          </div>
+          <div class="slider-wrap">
+            <div class="slider-track-area">
+              <input type="range" min="-20" max="30" step="10" value="20" id="temp-slider"
+                     aria-label="What is the outside temperature?" aria-valuetext="+20 degrees Celsius"
+                oninput="updateSlider('temp-slider','temp-tooltip','temp-thumb'); updateTime()">
+              <div class="slider-thumb" id="temp-thumb">
+                <div class="slider-tooltip" id="temp-tooltip">+20°</div>
+              </div>
+            </div>
+            <div class="slider-labels"><span>−20 °C</span><span>+30 °C</span></div>
+          </div>
+        </div>
+
+      </div><!-- /input-section -->
+
+      <!-- RIGHT COLUMN -->
+      <div class="right-col">
+        <div class="output-panel">
+
+          <!-- Model selection -->
+          <div class="model-selection" id="model-selection">
+            <div class="model-combo">
+              <div class="question">
+                <span class="question-label">Which model are you interested in?</span>
+              </div>
+              <div class="select-group">
+                <div class="fl-select">
+                  <span class="fl-label" id="trim-fl-label">The new ID.3 Neo</span>
+                  <select id="trim-select" aria-labelledby="trim-fl-label" onchange="updateBatteryOptions(); updateCarImage(); updateTime()">
+                    <optgroup label="The new ID.3 Neo">
+                      <option value="Trend">Trend</option>
+                      <option value="Life">Life</option>
+                      <option value="Style">Style</option>
+                    </optgroup>
+                    <optgroup label="The new ID. Polo">
+                      <option value="PoloTrend">Trend</option>
+                      <option value="PoloLife">Life</option>
+                      <option value="PoloStyle">Style</option>
+                      <option value="PoloGTI">GTI</option>
+                    </optgroup>
+                  </select>
+                  <span class="fl-chevron">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M 12 17.713 C 11.55 17.713 11.127 17.535 10.811 17.213 L 1.025 7.216 L 1.975 6.285 L 11.76 16.281 C 11.89 16.412 12.109 16.413 12.24 16.280 L 22.025 6.285 L 22.975 7.216 L 13.19 17.212 C 12.873 17.536 12.45 17.713 12 17.713 Z" fill="rgba(0,30,80,1)"/></svg>
+                  </span>
+                </div>
+                <div class="fl-select">
+                  <span class="fl-label" id="battery-fl-label">Motor / Battery Capacity</span>
+                  <select id="battery-select" aria-labelledby="battery-fl-label" onchange="updateTime()">
+                    <option value="50">125 kW (170 PS) · 50 kWh</option>
+                    <option value="58">140 kW (190 PS) · 58 kWh</option>
+                    <option value="79">170 kW (231 PS) · 79 kWh</option>
+                  </select>
+                  <span class="fl-chevron">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M 12 17.713 C 11.55 17.713 11.127 17.535 10.811 17.213 L 1.025 7.216 L 1.975 6.285 L 11.76 16.281 C 11.89 16.412 12.109 16.413 12.24 16.280 L 22.025 6.285 L 22.975 7.216 L 13.19 17.212 C 12.873 17.536 12.45 17.713 12 17.713 Z" fill="rgba(0,30,80,1)"/></svg>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="model-frame">
+              <div class="vehicle-asset">
+                <img src="../range-simulator/site-01/assets/media/id3/id3-trend.webp" alt="Volkswagen ID.3 Neo" id="car-img">
+              </div>
+              <div class="model-content">
+                <p class="model-disclaimer" id="model-disclaimer">Electricity combined fuel consumption 22.7–22.5 kWh / 100 mi · CO₂ emissions combined 0 g / km</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Result -->
+          <div class="result-section">
+            <div class="result-header">
+              <div class="result-headline-row">
+                <span class="result-headline-label">Estimated charging time</span>
+              </div>
+              <div class="time-display" id="time-display" aria-hidden="true">–:– h</div>
+              <p class="sr-only" id="time-live" aria-live="polite"></p>
+            </div>
+          </div>
+
+          <button class="cta-button">Configure this ID. model &nbsp;→</button>
+
+        </div>
+      </div><!-- /right-col -->
+
+      <!-- Sticky result bar (mobile) -->
+      <div class="sticky-result" id="sticky-result" aria-hidden="true">
+        <div class="result-header">
+          <div class="result-headline-row">
+            <span class="result-headline-label" id="sticky-model-label">The new ID.3 Neo Trend</span>
+          </div>
+          <div class="time-display" id="sticky-time-display" aria-hidden="true">–:– h</div>
+        </div>
+      </div>
+
+    </div><!-- /section-container -->
+
+    <div class="disclaimer">
+      <span class="disclaimer-num">1</span>
+      <p class="disclaimer-copy">Estimated charging time only (based on user inputs and test values) for the standard German specification car (model year 2026). Actual results will vary. Figures assume charging from the selected starting charge level to the selected target charge level. The actual charging time depends on the vehicle's on-board charger capability, the charger used, charging power available, ambient temperature and battery condition. These figures may not reflect real life charging times. Data correct as at February 2026.</p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── Battery data ──
+const battCapacities = { '50':52, '58':58, '79':77, '37a':40, '37b':40, '52a':55, '52b':55 };
+const maxDC = { '50':100, '58':100, '79':135, '37a':85, '37b':85, '52a':135, '52b':135 };
+// All models: 11kW max AC
+
+// ── Location→charger availability ──
+const locationChargerMatrix = {
+  home:     { socket: true,  wallbox: true,  dc: false },
+  work:     { socket: true,  wallbox: true,  dc: true  },
+  public:   { socket: false, wallbox: true,  dc: true  },
+  motorway: { socket: false, wallbox: false, dc: true  }
+};
+
+// ── Charger→power availability ──
+const chargerPowerMatrix = {
+  socket:  { '2.3': true,  '7.2': false, '11': false, '22': false, '50': false, '150': false },
+  wallbox: { '2.3': false, '7.2': true,  '11': true,  '22': true,  '50': false, '150': false },
+  dc:      { '2.3': false, '7.2': false, '11': false, '22': false, '50': true,  '150': true  }
+};
+
+const chargerDefaults = { socket: '2.3', wallbox: '11', dc: '50' };
+
+let currentLocation = 'home';
+let currentCharger = 'wallbox';
+let currentPower = 11;
+// SC 2.5.8: 18x18 thumbs whose centres can reach 2.9px apart fail both the
+// size rule and the Spacing exception. 24 units of the 0-100 track is wider
+// than 24 CSS px at every breakpoint, so this guarantees non-overlapping targets.
+const MIN_SOC_GAP = 24;
+let socFrom = 20;
+let socTo = 80;
+
+function selectLocation(btn) {
+  if (btn.classList.contains('disabled')) return;
+  currentLocation = btn.dataset.val;
+  document.querySelectorAll('#location-group .btn-card').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateChargerAvailability();
+  updateTime();
+}
+
+function updateChargerAvailability() {
+  const avail = locationChargerMatrix[currentLocation];
+  let chargerButtons = document.querySelectorAll('#charger-group .btn-card');
+  let activeChargerAvailable = avail[currentCharger];
+
+  chargerButtons.forEach(b => {
+    const v = b.dataset.val;
+    if (avail[v]) {
+      b.classList.remove('disabled');
+    } else {
+      b.classList.remove('active');
+      b.classList.add('disabled');
+    }
+  });
+
+  if (!activeChargerAvailable) {
+    // Pick first available
+    const firstAvail = Object.keys(avail).find(k => avail[k]);
+    if (firstAvail) {
+      currentCharger = firstAvail;
+      chargerButtons.forEach(b => {
+        b.classList.remove('active');
+        if (b.dataset.val === firstAvail) b.classList.add('active');
+      });
+    }
+  } else {
+    chargerButtons.forEach(b => {
+      if (b.dataset.val === currentCharger) b.classList.add('active');
+    });
+  }
+  updatePowerAvailability();
+}
+
+function selectCharger(btn) {
+  if (btn.classList.contains('disabled')) return;
+  currentCharger = btn.dataset.val;
+  document.querySelectorAll('#charger-group .btn-card').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updatePowerAvailability();
+  updateTime();
+}
+
+function updatePowerAvailability() {
+  const avail = chargerPowerMatrix[currentCharger];
+  const def = chargerDefaults[currentCharger];
+  let powerButtons = document.querySelectorAll('#power-group .btn-pill');
+
+  powerButtons.forEach(b => {
+    const v = b.dataset.val;
+    b.classList.remove('active');
+    if (avail[v]) {
+      b.classList.remove('disabled');
+    } else {
+      b.classList.add('disabled');
+    }
+  });
+
+  // Select default
+  currentPower = parseFloat(def);
+  powerButtons.forEach(b => {
+    if (b.dataset.val === def) b.classList.add('active');
+  });
+}
+
+function selectPower(btn) {
+  if (btn.classList.contains('disabled')) return;
+  currentPower = parseFloat(btn.dataset.val);
+  document.querySelectorAll('#power-group .btn-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateTime();
+}
+
+// ── Temperature slider ──
+function updateSlider(sliderId, tooltipId, thumbId) {
+  const s = document.getElementById(sliderId);
+  const thumb = document.getElementById(thumbId);
+  const val = parseFloat(s.value);
+  const pct = (val - parseFloat(s.min)) / (parseFloat(s.max) - parseFloat(s.min)) * 100;
+  thumb.style.left = pct + '%';
+  const tip = document.getElementById(tooltipId);
+  if (tip) {
+    tip.textContent = (val >= 0 ? '+' : '') + val + ' °C';
+    tip.classList.remove('align-left', 'align-right');
+    if (pct < 10) tip.classList.add('align-left');
+    else if (pct > 90) tip.classList.add('align-right');
+  }
+}
+
+// ── SOC dual slider ──
+function initSocSlider() {
+  const track = document.getElementById('soc-track');
+  const active = document.getElementById('soc-active');
+  const thumbFrom = document.getElementById('soc-thumb-from');
+  const thumbTo = document.getElementById('soc-thumb-to');
+  const tipFrom = document.getElementById('soc-tip-from');
+  const tipTo = document.getElementById('soc-tip-to');
+  const rec = document.getElementById('soc-recommended');
+
+  function setPositions() {
+    const fromPct = socFrom;
+    const toPct = socTo;
+    thumbFrom.style.left = fromPct + '%';
+    thumbTo.style.left = toPct + '%';
+    active.style.left = fromPct + '%';
+    active.style.right = (100 - toPct) + '%';
+    tipFrom.textContent = fromPct + '%';
+    tipTo.textContent = toPct + '%';
+    // Tooltip alignment
+    tipFrom.classList.remove('align-left','align-right');
+    tipTo.classList.remove('align-left','align-right');
+    if (fromPct < 10) tipFrom.classList.add('align-left');
+    if (toPct > 90) tipTo.classList.add('align-right');
+    // Recommended marker at 80%
+    rec.style.left = '80%';
+    // SC 4.1.2: the thumbs are role=slider, so the exposed value must track the
+    // visual position on every path (drag, keyboard, track click) or AT reads a
+    // stale number.
+    thumbFrom.setAttribute('aria-valuenow', String(fromPct));
+    thumbFrom.setAttribute('aria-valuetext', fromPct + ' percent');
+    thumbTo.setAttribute('aria-valuenow', String(toPct));
+    thumbTo.setAttribute('aria-valuetext', toPct + ' percent');
+    updateTime();
+  }
+
+  // SC 2.1.1: there was no keydown handler anywhere in the document, so the
+  // primary control of the tool was mouse/touch only.
+  function makeKeyboard(thumb, isFrom) {
+    thumb.addEventListener('keydown', e => {
+      const step = (e.key === 'PageUp' || e.key === 'PageDown') ? 10 : 1;
+      let d = 0;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'PageUp') d = step;
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown' || e.key === 'PageDown') d = -step;
+      else if (e.key === 'Home') d = isFrom ? -100 : -100;
+      else if (e.key === 'End') d = 100;
+      else return;
+      e.preventDefault();
+      if (isFrom) socFrom = Math.max(0, Math.min(socFrom + d, socTo - MIN_SOC_GAP));
+      else        socTo   = Math.min(100, Math.max(socTo + d, socFrom + MIN_SOC_GAP));
+      setPositions();
+    });
+  }
+  makeKeyboard(thumbFrom, true);
+  makeKeyboard(thumbTo, false);
+
+  // SC 2.5.7: dragging was the only way to set a value. The whole track is now a
+  // single-pointer target — a tap moves whichever thumb is nearer.
+  track.addEventListener('click', e => {
+    if (e.target.closest('.soc-thumb')) return;   // the thumb handles its own drag
+    const rect = track.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(100, Math.round(((e.clientX - rect.left) / rect.width) * 100)));
+    if (Math.abs(pct - socFrom) <= Math.abs(pct - socTo)) socFrom = Math.min(pct, socTo - MIN_SOC_GAP);
+    else socTo = Math.max(pct, socFrom + MIN_SOC_GAP);
+    setPositions();
+  });
+
+  function makeDraggable(thumb, isFrom) {
+    function onMove(e) {
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const rect = track.getBoundingClientRect();
+      const raw = Math.round(((clientX - rect.left) / rect.width) * 100);
+      const clamped = Math.max(0, Math.min(100, raw));
+      if (isFrom) {
+        socFrom = Math.min(clamped, socTo - MIN_SOC_GAP);
+      } else {
+        socTo = Math.max(clamped, socFrom + MIN_SOC_GAP);
+      }
+      setPositions();
+    }
+    function onEnd() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onEnd);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onEnd);
+    }
+    thumb.addEventListener('mousedown', e => {
+      e.preventDefault();
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onEnd);
+    });
+    thumb.addEventListener('touchstart', e => {
+      e.preventDefault();
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend', onEnd);
+    }, { passive: false });
+  }
+
+  makeDraggable(thumbFrom, true);
+  makeDraggable(thumbTo, false);
+  setPositions();
+}
+
+// ── Charging time calculation ──
+function tempFactor(t) {
+  if (t <= -20) return 0.65;
+  if (t <= 0)   return 0.65 + (t + 20) / 20 * 0.25;
+  if (t <= 5)   return 0.90 + t / 5 * 0.10;
+  return 1.0;
+}
+
+function buildTimeSlots(container, hours, minutes) {
+  const hDigits = String(hours).split('').map(Number);
+  const mDigits = String(minutes).padStart(2, '0').split('').map(Number);
+  const totalDigits = hDigits.length + mDigits.length;
+  const existing = container.querySelectorAll('.slot-digit');
+
+  if (existing.length !== totalDigits) {
+    container.innerHTML = '';
+    hDigits.forEach(() => {
+      const col = document.createElement('span');
+      col.className = 'slot-digit';
+      const reel = document.createElement('span');
+      reel.className = 'slot-reel';
+      for (let k = 0; k <= 9; k++) {
+        const d = document.createElement('span');
+        d.textContent = k;
+        reel.appendChild(d);
+      }
+      col.appendChild(reel);
+      container.appendChild(col);
+    });
+    const sep = document.createElement('span');
+    sep.textContent = ':';
+    sep.style.margin = '0 1px';
+    container.appendChild(sep);
+    mDigits.forEach(() => {
+      const col = document.createElement('span');
+      col.className = 'slot-digit';
+      const reel = document.createElement('span');
+      reel.className = 'slot-reel';
+      for (let k = 0; k <= 9; k++) {
+        const d = document.createElement('span');
+        d.textContent = k;
+        reel.appendChild(d);
+      }
+      col.appendChild(reel);
+      container.appendChild(col);
+    });
+    const unit = document.createElement('span');
+    unit.textContent = ' h';
+    unit.style.marginLeft = '4px';
+    container.appendChild(unit);
+  }
+
+  const allDigits = [...hDigits, ...mDigits];
+  container.querySelectorAll('.slot-digit').forEach((col, i) => {
+    const reel = col.querySelector('.slot-reel');
+    reel.style.transitionDelay = (allDigits.length - 1 - i) * 60 + 'ms';
+    reel.style.transform = `translateY(-${allDigits[i]}em)`;
+  });
+}
+
+function updateTime() {
+  const batt = document.getElementById('battery-select')?.value ?? '50';
+  const cap = battCapacities[batt] || 52;
+  const deltaKWh = cap * (socTo - socFrom) / 100;
+  const isDC = currentCharger === 'dc';
+  const maxCarPower = isDC ? (maxDC[batt] || 100) : 11;
+  const effectivePower = Math.min(currentPower, maxCarPower);
+  const temp = parseFloat(document.getElementById('temp-slider')?.value ?? 20);
+  const tf = tempFactor(temp);
+  const timeHours = effectivePower > 0 ? deltaKWh / (effectivePower * tf) : 0;
+
+  const h = Math.floor(timeHours);
+  const m = Math.round((timeHours - h) * 60);
+  const mStr = String(m === 60 ? 0 : m).padStart(2, '0');
+  const hVal = m === 60 ? h + 1 : h;
+  const display = `${hVal}:${mStr} h`;
+
+  const el = document.getElementById('time-display');
+  const stickyEl = document.getElementById('sticky-time-display');
+  const mVal = m === 60 ? 0 : m;
+  if (el) buildTimeSlots(el, hVal, mVal);
+  if (stickyEl) buildTimeSlots(stickyEl, hVal, mVal);
+  // SC 1.3.1 / 4.1.3: the reels above are aria-hidden because their textContent is
+  // every digit of every column. This is the only accessible form of the result and,
+  // being aria-live, it announces each recomputation.
+  const live = document.getElementById('time-live');
+  if (live && live.dataset.last !== display) {
+    live.dataset.last = display;
+    live.textContent = 'Charging time ' + hVal + ' hours ' + mStr + ' minutes';
+  }
+  syncGroupA11y();
+}
+
+// SC 4.1.2: selection and disabled state lived only in CSS classes, so AT heard
+// 13 identical enabled buttons. Derive the ARIA and the real disabled attribute
+// from the classes on every recomputation rather than at each call site.
+function syncGroupA11y() {
+  ['location-group', 'charger-group', 'power-group'].forEach(gid => {
+    const g = document.getElementById(gid);
+    if (!g) return;
+    g.querySelectorAll('button').forEach(b => {
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', b.classList.contains('active') ? 'true' : 'false');
+      const off = b.classList.contains('disabled');
+      // real disabled, not just a class: the class alone left them focusable and
+      // announced as enabled while silently swallowing Enter
+      if (off !== b.disabled) b.disabled = off;
+    });
+  });
+}
+
+// ── Model selection (shared with range simulator) ──
+const carImages = {
+  Trend:'../range-simulator/site-01/assets/media/id3/id3-trend.webp', Life:'../range-simulator/site-01/assets/media/id3/id3-life.webp', Style:'../range-simulator/site-01/assets/media/id3/id3-style.webp',
+  PoloTrend:'../range-simulator/site-01/assets/media/idpolo/idpolo-trend.webp', PoloLife:'../range-simulator/site-01/assets/media/idpolo/idpolo-life.webp',
+  PoloStyle:'../range-simulator/site-01/assets/media/idpolo/idpolo-style.webp', PoloGTI:'../range-simulator/site-01/assets/media/idpolo/idpolo-gti.webp'
+};
+
+// SC 1.1.1: alt must follow src. Keyed identically to carImages so a new trim
+// cannot be added to one without the other being obviously missing.
+const CAR_ALT = {
+  Trend:'Volkswagen ID.3 Neo Trend', Life:'Volkswagen ID.3 Neo Life', Style:'Volkswagen ID.3 Neo Style',
+  PoloTrend:'Volkswagen ID. Polo Trend', PoloLife:'Volkswagen ID. Polo Life',
+  PoloStyle:'Volkswagen ID. Polo Style', PoloGTI:'Volkswagen ID. Polo GTI'
+};
+
+function updateCarImage() {
+  const trim = document.getElementById('trim-select')?.value ?? 'Trend';
+  const img = document.getElementById('car-img');
+  // SC 1.1.1: src was reassigned without alt, so the alt stayed "Volkswagen ID.3 Neo"
+  // for all 7 trims — wrong in 4 of them.
+  if (img && carImages[trim]) {
+    img.src = carImages[trim];
+    img.alt = CAR_ALT[trim] || 'Volkswagen';
+  }
+}
+
+function syncSelectValue(sel) {
+  const valueEl = document.getElementById(sel.id.replace('-select','-value'));
+  if (valueEl) valueEl.textContent = sel.options[sel.selectedIndex]?.text ?? '';
+}
+
+const batteryOptions = {
+  Trend: [{ value:'50', label:'125 kW (170 PS) · 50 kWh' }],
+  Life:  [{ value:'50', label:'125 kW (170 PS) · 50 kWh' },{ value:'58', label:'140 kW (190 PS) · 58 kWh' },{ value:'79', label:'170 kW (231 PS) · 79 kWh' }],
+  Style: [{ value:'50', label:'125 kW (170 PS) · 50 kWh' },{ value:'58', label:'140 kW (190 PS) · 58 kWh' },{ value:'79', label:'170 kW (231 PS) · 79 kWh' }],
+  PoloTrend: [{ value:'37a', label:'85 kW (116 PS) · 37 kWh' }],
+  PoloLife:  [{ value:'37a', label:'85 kW (116 PS) · 37 kWh' },{ value:'37b', label:'99 kW (135 PS) · 37 kWh' },{ value:'52a', label:'155 kW (211 PS) · 52 kWh' }],
+  PoloStyle: [{ value:'37b', label:'99 kW (135 PS) · 37 kWh' },{ value:'52a', label:'155 kW (211 PS) · 52 kWh' }],
+  PoloGTI:   [{ value:'52b', label:'166 kW (226 PS) · 52 kWh' }]
+};
+
+function updateBatteryOptions() {
+  const trim = document.getElementById('trim-select')?.value ?? 'Trend';
+  const sel = document.getElementById('battery-select');
+  if (!sel) return;
+  const opts = batteryOptions[trim] || batteryOptions.Trend;
+  const current = sel.value;
+  sel.innerHTML = opts.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+  if (opts.some(o => o.value === current)) sel.value = current;
+}
+
+const consumptionData = {
+  Trend_50:'22.7–22.5 kWh / 100 mi', Life_50:'25.1–22.5 kWh / 100 mi', Life_58:'24.9–22.4 kWh / 100 mi', Life_79:'25.3–23.0 kWh / 100 mi',
+  Style_50:'25.3–22.9 kWh / 100 mi', Style_58:'25.1–22.7 kWh / 100 mi', Style_79:'25.4–23.2 kWh / 100 mi',
+  PoloTrend_37a:'22.2–20.6 kWh / 100 mi', PoloLife_37a:'22.7–20.8 kWh / 100 mi', PoloLife_37b:'23.0–21.1 kWh / 100 mi',
+  PoloLife_52a:'23.3–21.4 kWh / 100 mi', PoloStyle_37b:'23.2–21.2 kWh / 100 mi', PoloStyle_52a:'23.5–21.6 kWh / 100 mi',
+  PoloGTI_52b:'24.6–22.4 kWh / 100 mi',
+};
+
+function updateDisclaimer() {
+  const disclaimerEl = document.getElementById('model-disclaimer');
+  if (!disclaimerEl) return;
+  const trim = document.getElementById('trim-select')?.value ?? 'Trend';
+  const batt = document.getElementById('battery-select')?.value ?? '50';
+  const consumption = consumptionData[`${trim}_${batt}`];
+  disclaimerEl.textContent = consumption
+    ? `Electricity combined fuel consumption ${consumption} · CO₂ emissions combined 0 g / km`
+    : 'CO₂ emissions combined 0 g / km';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  updateSlider('temp-slider','temp-tooltip','temp-thumb');
+  updateBatteryOptions();
+  updateCarImage();
+
+  const trimFlLabel = document.getElementById('trim-fl-label');
+  const trimGroupLabels = {
+    Trend:'The new ID.3 Neo', Life:'The new ID.3 Neo', Style:'The new ID.3 Neo',
+    PoloTrend:'The new ID. Polo', PoloLife:'The new ID. Polo', PoloStyle:'The new ID. Polo', PoloGTI:'The new ID. Polo'
+  };
+  function updateTrimLabel() {
+    const trim = document.getElementById('trim-select')?.value ?? 'Trend';
+    if (trimFlLabel) trimFlLabel.textContent = trimGroupLabels[trim] || 'The new ID.3 Neo';
+  }
+  document.getElementById('trim-select')?.addEventListener('change', updateTrimLabel);
+  updateTrimLabel();
+
+  document.getElementById('trim-select')?.addEventListener('change', updateDisclaimer);
+  document.getElementById('battery-select')?.addEventListener('change', updateDisclaimer);
+  updateDisclaimer();
+
+  document.getElementById('battery-select')?.addEventListener('change', updateTime);
+
+  // Sticky bar
+  const trimNames = {
+    Trend:'The new ID.3 Neo Trend', Life:'The new ID.3 Neo Life', Style:'The new ID.3 Neo Style',
+    PoloTrend:'The new ID. Polo Trend', PoloLife:'The new ID. Polo Life',
+    PoloStyle:'The new ID. Polo Style', PoloGTI:'The new ID. Polo GTI'
+  };
+  const stickyModelLabel = document.getElementById('sticky-model-label');
+  function updateStickyLabel() {
+    const trim = document.getElementById('trim-select')?.value ?? 'Trend';
+    if (stickyModelLabel) stickyModelLabel.textContent = trimNames[trim] || trim;
+  }
+  document.getElementById('trim-select')?.addEventListener('change', updateStickyLabel);
+  updateStickyLabel();
+
+  const stickyBar = document.getElementById('sticky-result');
+  const inlineResult = document.querySelector('.result-section');
+  stickyBar?.addEventListener('click', () => {
+    const target = document.getElementById('model-selection');
+    if (!target) return;
+    window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 80, behavior:'smooth' });
+  });
+  if (stickyBar && inlineResult) {
+    const checkVisibility = () => {
+      if (window.innerWidth >= 960) { stickyBar.classList.remove('visible'); return; }
+      const rect = inlineResult.getBoundingClientRect();
+      const bottomInView = rect.bottom <= window.innerHeight && rect.bottom > 0;
+      stickyBar.classList.toggle('visible', !bottomInView);
+      stickyBar.setAttribute('aria-hidden', bottomInView ? 'true' : 'false');
+    };
+    window.addEventListener('scroll', checkVisibility, { passive:true });
+    window.addEventListener('resize', checkVisibility);
+    checkVisibility();
+  }
+
+  initSocSlider();
+  updateTime();
+});
+</script>
+</body>
+</html>

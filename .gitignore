@@ -1,0 +1,13 @@
+# intermediate backups written by the a11y fix scripts
+*.bak
+*.orig
+# macOS
+.DS_Store
+# stray Chrome user-data-dirs from headless audit runs
+fprof*/
+tprof*/
+sprof*/
+nprof*/
+cprof*/
+rprof*/
+xprof*/
