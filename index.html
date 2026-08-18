@@ -292,6 +292,12 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
   overflow:hidden; clip:rect(0,0,0,0); clip-path:inset(50%);
   border:0; white-space:nowrap;
 }
+/* #time-live sits inside the navy .result-section and inherited the body's #1b2236,
+   so it was #1b2236 on #1b2236 — 1:1. Clipped to 1x1, so nothing is visually
+   rendered and no user was affected; but real WAVE does not treat .sr-only as hidden
+   and reported a Contrast Error a BITV tester then has to dismiss by hand. White also
+   degrades safely if the clip ever breaks. Scoped, not global. */
+#time-live { color:#fff; }
 @media (max-width:959px) { .simulator, .charging-simulator { padding-bottom:160px; } }
 
 /* SC 2.4.1: skip link, visually hidden until focused */
