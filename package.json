@@ -1,0 +1,16 @@
+{
+  "name": "vw-charging-time-simulator-prototype",
+  "private": true,
+  "version": "0.0.0",
+  "description": "VW Charging Time Simulator accessibility prototype — behavioural specification for the production port",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.1",
+    "@playwright/test": "^1.49.1",
+    "axe-core": "^4.10.2"
+  }
+}
