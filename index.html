@@ -322,15 +322,10 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
     flex-wrap: wrap !important;
     row-gap: 8px;
   }
-  .btn-group .btn-card, .btn-group .btn-pill { flex: 0 1 auto !important; }
-}
-/* At ≤767px the buttons fill their row equally — each location, method and
-   power option takes an equal share rather than hugging its label width.
-   Must come AFTER the ≤959px reflow override above, or that block's
-   flex:0 1 auto !important (same cascade weight) wins by source order. */
-@media (max-width:767px) {
-  .btn-group .btn-card,
-  .btn-group .btn-pill { flex:1 !important; }
+  /* flex:1 keeps buttons equal-width and filling the row at all sizes ≤959px.
+     flex-wrap:wrap on .btn-group above ensures every option stays reachable
+     at 320px without horizontal scroll (SC 1.4.10). */
+  .btn-group .btn-card, .btn-group .btn-pill { flex:1 !important; }
 }
 /* SC 2.5.8: the 18x18 thumbs can be driven to adjacent values, putting their
    centres 2.9px apart so even the 24px Spacing exception fails. MIN_SOC_GAP in the
