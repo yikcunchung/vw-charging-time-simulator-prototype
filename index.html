@@ -142,10 +142,11 @@ body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -w
 .btn-pill:hover:not(.disabled):not(.active) { box-shadow:0 0 0 1px rgba(153,127,103,1) inset; color:rgba(115,62,1,1); }
 
 @media (max-width:767px) {
-  .btn-group { overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
-  .btn-group::-webkit-scrollbar { display:none; }
-  .btn-card { flex:none; flex-direction:row; padding:8px 12px; gap:6px; }
-  .btn-pill { flex:none; padding:8px 12px; }
+  /* Buttons fill the viewport width equally rather than scrolling.
+     The ≤959px reflow rule sets flex:0 1 auto; this overrides to flex:1
+     so each button takes an equal share of its row. */
+  .btn-group .btn-card,
+  .btn-group .btn-pill { flex:1 !important; }
 }
 
 /* Divider */
@@ -153,7 +154,7 @@ body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -w
 
 /* ── Floating label select ── */
 .fl-select { position:relative; overflow:visible; }
-.fl-select select { width:100%; height:50px; padding:20px 48px 0 16px; font-family:var(--font-text); font-size:16px; font-weight:400; color:rgba(0,14,38,1); background:transparent; border:1px solid rgb(110,116,126); border-radius:8px; appearance:none; cursor:pointer; outline:none; text-overflow:ellipsis; box-sizing:border-box; transition:border-color 0.15s; }
+.fl-select select { width:100%; height:50px; padding:20px 56px 0 16px; font-family:var(--font-text); font-size:16px; font-weight:400; color:rgba(0,14,38,1); background:transparent; border:1px solid rgb(110,116,126); border-radius:8px; appearance:none; cursor:pointer; outline:none; text-overflow:ellipsis; box-sizing:border-box; transition:border-color 0.15s; }
 .fl-select:hover select { border-color:rgba(153,127,103,1); color:rgba(115,62,1,1); }
 .fl-select:hover .fl-label { color:rgba(115,62,1,1); }
 .fl-select:hover .fl-chevron svg path { fill:rgba(115,62,1,1); }
