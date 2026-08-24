@@ -141,13 +141,7 @@ body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -w
 .btn-pill.disabled { box-shadow:0 0 0 1px rgba(208,209,213,1) inset; color:rgba(96,101,116,1); cursor:not-allowed; }
 .btn-pill:hover:not(.disabled):not(.active) { box-shadow:0 0 0 1px rgba(153,127,103,1) inset; color:rgba(115,62,1,1); }
 
-@media (max-width:767px) {
-  /* Buttons fill the viewport width equally rather than scrolling.
-     The ≤959px reflow rule sets flex:0 1 auto; this overrides to flex:1
-     so each button takes an equal share of its row. */
-  .btn-group .btn-card,
-  .btn-group .btn-pill { flex:1 !important; }
-}
+
 
 /* Divider */
 .combo-divider { height:1px; background:rgba(110,116,126,1); }
@@ -329,6 +323,14 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
     row-gap: 8px;
   }
   .btn-group .btn-card, .btn-group .btn-pill { flex: 0 1 auto !important; }
+}
+/* At ≤767px the buttons fill their row equally — each location, method and
+   power option takes an equal share rather than hugging its label width.
+   Must come AFTER the ≤959px reflow override above, or that block's
+   flex:0 1 auto !important (same cascade weight) wins by source order. */
+@media (max-width:767px) {
+  .btn-group .btn-card,
+  .btn-group .btn-pill { flex:1 !important; }
 }
 /* SC 2.5.8: the 18x18 thumbs can be driven to adjacent values, putting their
    centres 2.9px apart so even the 24px Spacing exception fails. MIN_SOC_GAP in the
