@@ -25,7 +25,7 @@ criteria are not required and are not listed.
 | ⚪ N/A | The app has no such content |
 | ⚖️ Decide | Passes, but on an arguable reading — record the decision |
 
-**56 criteria assessed. 0 failures and 0 open items.** 23 verified · 9 inspected · 23 not applicable · 1 decision to record.
+**56 criteria assessed. 0 failures and 0 open items.** 24 verified · 9 inspected · 23 not applicable.
 
 ---
 
@@ -171,7 +171,7 @@ criteria are not required and are not listed.
 | SC | Name | Lvl | Relevant | Status | Evidence / what to do |
 |---|---|---|---|---|---|
 | **4.1.1** | Parsing | A | Yes | ✅ Pass | Nu HTML validator: **0 errors**. Obsolete in WCAG 2.2 but normative under EN 301 549 clause 9.4.1.1, so it is checked and kept. |
-| **4.1.2** | Name, Role, Value | A | Yes | ⚖️ Decide | **AX tree: 229 nodes, 37 named, 0 unnamed, 0 duplicate role+name** (the `Trend/Life/Style ×2` pairs are one `<select>` split across two `<optgroup>`s, disambiguated by the group). Both SOC thumbs expose `role="slider"`, a unique name, and `aria-valuenow`/`min`/`max`, written from all three update paths — keyboard, drag and track click. **Decide:** `#trim-select` takes its name from a label whose text JavaScript rewrites on every change, so the accessible name mutates with the value — see the decisions table. |
+| **4.1.2** | Name, Role, Value | A | Yes | ✅ Pass | **AX tree: 229 nodes, 37 named, 0 unnamed, 0 duplicate role+name** (the `Trend/Life/Style ×2` pairs are one `<select>` split across two `<optgroup>`s, disambiguated by the group). Both SOC thumbs expose `role="slider"`, a unique name, and `aria-valuenow`/`min`/`max`, written from all three update paths — keyboard, drag and track click. `#trim-select`'s `aria-labelledby` concatenates the visible question ("Which model are you interested in?") with the floating label showing the current trim group: name is "Which model are you interested in? The new ID.3 Neo", updating to "… The new ID. Polo" on change. The purpose-describing half is permanently stable; only the value half mutates, same as any label describing a control whose display also shows the current value. |
 | **4.1.3** | Status Messages | AA | Yes | ✅ Pass | `#time-live` (`aria-live="polite"`, in the DOM at load, 1×1 clipped with an explicit white `color`) announces every recomputation — driven through 4 distinct announcements, e.g. "Charging time 2 hours 50 minutes" → "2 hours 11 minutes" → "0 hours 40 minutes". |
 
 ---
@@ -181,11 +181,8 @@ criteria are not required and are not listed.
 **No open criteria and no known failures.** Every Level A/AA criterion is verified, inspected, or
 not applicable.
 
-**One decision to record.** It passes; it needs a recorded position, not code:
-
-| SC | Decision |
-|---|---|
-| **4.1.2** Name, Role, Value | The `#trim-select` combobox takes its accessible name from `#trim-fl-label`, whose text JavaScript **rewrites on every change** to the model-group name. So the name is "The new ID.3 Neo" rather than a stable field label like "Equipment line", and it *mutates as the value changes*. A screen reader announces "The new ID.3 Neo, combobox … The new ID.3 Neo group, Trend". Not a hard AA failure — the name is present, unique and accurate at the moment it is read — but a mutating name is fragile. Prefer a stable visible label. |
+**No decisions outstanding.** `#trim-select`'s naming (4.1.2, above) resolved to a plain pass once
+the visible question was added to its `aria-labelledby` alongside the existing floating label.
 
 **One thing that is measurable only with a real screen reader.** CDP reports `valuetext: ""` for the
 SOC thumbs even though `aria-valuetext="20 percent"` is set — but it does that for *every* ARIA
