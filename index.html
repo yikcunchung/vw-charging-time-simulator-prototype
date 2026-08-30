@@ -30,6 +30,7 @@
   --tooltip-bg: rgba(49,56,74,1);
   --font-text: 'VW Text','Inter',-apple-system,sans-serif;
   --font-head: 'VW Head','Inter',-apple-system,sans-serif;
+  --focus-orange: #C86C03;
 }
 
 body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -webkit-font-smoothing:antialiased; font-size:16px; }
@@ -105,6 +106,7 @@ body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -w
 .question-label { font-family:var(--font-text); font-size:16px; font-weight:700; line-height:1.2; color:var(--navy); }
 .q-icon-btn { position:relative; display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; color:rgb(41,48,67); background:transparent; border:none; padding:0; cursor:pointer; flex-shrink:0; margin-left:4px; vertical-align:middle; -webkit-tap-highlight-color:transparent; }
 .q-icon { width:24px; height:24px; display:block; pointer-events:none; }
+.q-icon-btn:focus-visible { outline: 2px solid var(--focus-orange); border-radius: 50%; }
 
 /* ── Button groups ── */
 .btn-group { display:flex; gap:12px; width:100%; }
@@ -125,6 +127,7 @@ body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -w
 .btn-card img { width:24px; height:24px; display:block; pointer-events:none; }
 .btn-card.disabled img { opacity:0.35; }
 .btn-card:hover:not(.disabled):not(.active) { box-shadow:0 0 0 1px rgba(153,127,103,1) inset; color:rgba(115,62,1,1); }
+.btn-card:focus-visible { outline:2px solid var(--focus-orange); outline-offset:0; border-radius:12px; }
 
 .btn-pill {
   flex:1; min-width:0;
@@ -139,6 +142,7 @@ body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -w
 }
 .btn-pill.active { box-shadow:0 0 0 2px #997F67 inset; }
 .btn-pill.disabled { box-shadow:0 0 0 1px rgba(208,209,213,1) inset; color:rgba(96,101,116,1); cursor:not-allowed; }
+.btn-pill:focus-visible { outline:2px solid var(--focus-orange); outline-offset:0; border-radius:12px; }
 .btn-pill:hover:not(.disabled):not(.active) { box-shadow:0 0 0 1px rgba(153,127,103,1) inset; color:rgba(115,62,1,1); }
 
 
@@ -156,7 +160,13 @@ body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -w
 .fl-chevron { position:absolute; right:8px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center; justify-content:center; width:32px; height:32px; z-index:1; }
 .fl-chevron svg path { transition:fill 0.15s; }
 #tyre-select { padding:0 48px 0 16px; line-height:50px; }
-.select-group { display:flex; gap:12px; }
+.select-group { display:flex; gap:12px; flex-direction:column; }
+/* Unconditional, not viewport-gated: this page's own two-column grid (>=960px)
+   makes available width non-monotonic (227px at 960px is worse than 267px at
+   320px), so no breakpoint holds. Stacking gives each select the full row
+   width at every size, which comfortably fits "Model: The new ID.3 Neo" /
+   "Motor / Battery Capacity" even under SC 1.4.12 stress, with zero change to
+   .fl-select's own height and zero font-size reduction. */
 .select-group .fl-select { flex:1; min-width:0; }
 
 /* ── SOC dual slider ── */
@@ -176,7 +186,7 @@ body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -w
   position:absolute; bottom:calc(100% + 8px);
   background:var(--tooltip-bg); color:#fff;
   font-family:var(--font-text); font-size:14px; font-weight:700; line-height:1.2;
-  padding:8px 12px; border-radius:4px; white-space:nowrap;
+  padding:4px 12px; border-radius:4px; white-space:nowrap;
   left:50%; transform:translateX(-50%); pointer-events:none;
 }
 .soc-tooltip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:6px solid transparent; border-top-color:var(--tooltip-bg); }
@@ -203,7 +213,7 @@ body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -w
    actually sits on the #f6f5f2 page background at 5.38:1 (measured, dsf 2), so
    declaring that colour is a visual no-op that makes the markup state what is really
    there: #606574 on #f6f5f2 = 5.33:1. */
-.soc-recommended-label { font-family:var(--font-text); font-size:12px; line-height:18px; font-weight:400; color:var(--muted); background:var(--bg); white-space:nowrap; margin-top:4px; }
+.soc-recommended-label { font-family:var(--font-text); font-size:0.88rem; line-height:150%; font-weight:normal; letter-spacing:calc(-0.02em + 0.02rem); color:#1b2236; background:var(--bg); white-space:nowrap; margin:unset; }
 .slider-labels { display:flex; justify-content:space-between; font-family:var(--font-text); font-size:14px; font-weight:400; color:var(--navy); line-height:1.2; }
 
 /* ── Temp slider (same as range simulator) ── */
@@ -211,7 +221,7 @@ body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -w
 .slider-track-area { position:relative; height:4px; background:linear-gradient(270deg, #E4002C 0%, #FFD100 25%, #D5AE00 50%, #3064D0 75%, #4C0789 100%); border-radius:8px; margin:0 18px 10px; }
 input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); left:-18px; right:-18px; width:calc(100% + 36px); height:44px; opacity:0; cursor:pointer; z-index:2; margin:0; }
 .slider-thumb { position:absolute; top:50%; transform:translate(-50%,-50%); width:18px; height:18px; background:var(--navy-dark); border-radius:50%; pointer-events:none; z-index:1; box-shadow:0 1px 4px rgba(0,0,0,0.25); }
-.slider-tooltip { display:inline-flex; flex-direction:column; align-items:center; gap:4px; position:absolute; bottom:calc(100% + 8px); pointer-events:none; background:var(--tooltip-bg); color:#fff; font-family:var(--font-text); font-size:14px; font-weight:700; line-height:1.2; padding:8px 12px; border-radius:4px; white-space:nowrap; left:50%; transform:translateX(-50%); }
+.slider-tooltip { display:inline-flex; flex-direction:column; align-items:center; gap:4px; position:absolute; bottom:calc(100% + 8px); pointer-events:none; background:var(--tooltip-bg); color:#fff; font-family:var(--font-text); font-size:14px; font-weight:700; line-height:1.2; padding:4px 12px; border-radius:4px; white-space:nowrap; left:50%; transform:translateX(-50%); }
 .slider-tooltip.align-left { left:-9px; transform:none; }
 .slider-tooltip.align-right { left:auto; right:-9px; transform:none; }
 .slider-tooltip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:6px solid transparent; border-top-color:var(--tooltip-bg); }
@@ -228,6 +238,7 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
 .model-content { display:flex; flex-direction:column; gap:12px; }
 .model-disclaimer { font-family:var(--font-text); font-size:14px; font-weight:400; color:var(--navy); line-height:1.5; }
 .tech-link { display:inline-flex; flex-direction:column; gap:1px; cursor:pointer; width:fit-content; }
+.tech-link:focus-visible { outline:2px solid var(--focus-orange); outline-offset:0; border-radius:2px; }
 .tech-link-label { font-family:var(--font-text); font-size:16px; font-weight:400; color:var(--navy-dark); line-height:1.2; }
 .tech-link-stroke { height:1px; background:var(--navy-dark); }
 
@@ -235,7 +246,7 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
 .result-section { background:var(--navy); border-radius:12px; padding:24px; display:flex; flex-direction:column; gap:24px; width:100%; }
 @media (max-width:767px) { .result-section { padding:20px; } }
 .result-header { display:flex; flex-direction:column; gap:4px; }
-.result-headline-row { display:flex; align-items:flex-start; gap:8px; }
+.result-headline-row { display:flex; align-items:center; }
 .result-headline-label { font-family:var(--font-text); font-size:16px; font-weight:700; color:#fff; line-height:1.2; }
 .result-info-icon { width:24px; height:24px; flex-shrink:0; display:none; }
 
@@ -250,14 +261,26 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
 /* ── CTA ── */
 .cta-button { width:100%; height:44px; border:1px solid var(--navy-dark); border-radius:100px; background:transparent; color:var(--navy-dark); font-family:var(--font-text); font-size:16px; font-weight:400; padding:8px 32px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px; transition:background 0.15s, color 0.15s; }
 .cta-button:hover { background:var(--button-secondary-hover, #CCBDAB); border-color:transparent; color:var(--navy); }
+.cta-button:focus-visible { outline:2px solid var(--focus-orange); outline-offset:0; border-radius:100px; }
 .cta-button--inverted-secondary { background:transparent; border-color:#fff; color:#fff; }
 .cta-button--inverted-secondary:hover { background:rgba(255,255,255,0.12); border-color:#fff; color:#fff; }
 
 /* ── Sticky result bar ── */
 .sticky-result { display:none; }
 @media (max-width:959px) {
-  .sticky-result { display:block; position:fixed; bottom:0; left:0; right:0; background:var(--navy); padding:24px 8.33vw; z-index:100; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.22,1,0.36,1); pointer-events:none; }
-  .sticky-result.visible { transform:translateY(0); pointer-events:auto; }
+  .sticky-result { display:block; position:fixed; bottom:0px; left:0px; width:100%; background:var(--navy); padding:16px 32px; z-index:10; transform:translateY(100%); transition:transform 0.2s; pointer-events:none; }
+  .sticky-result.visible { transform:translateY(0%); pointer-events:auto; }
+}
+/* Fluid value type, scoped to the sticky bar only (higher specificity than the
+   shared .time-display rule, so the main result card is untouched). */
+.sticky-result .time-display {
+  color: rgb(255, 255, 255);
+  margin: unset;
+  font-family: var(--font-head);
+  font-weight: bold;
+  font-size: clamp(2.5rem, 2.19rem + 0.88vw, 3.25rem);
+  line-height: 120%;
+  letter-spacing: calc(-0.02em + 0.02rem);
 }
 
 /* ── Disclaimer ── */
@@ -268,11 +291,11 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
 /* ---- a11y additions (WCAG 2.2 AA) ---- */
 /* SC 2.4.7: these three drew 0 indicator pixels. .fl-select select sets
    outline:none, and #temp-slider is opacity:0 so its UA ring is transparent. */
-.fl-select select:focus-visible { outline:2px solid var(--navy-dark,#1B2236); outline-offset:2px; }
+.fl-select select:focus-visible { outline:2px solid var(--focus-orange); outline-offset:0; }
 input[type="range"]:focus-visible ~ .slider-thumb {
-  outline:2px solid var(--navy-dark,#1B2236); outline-offset:3px; border-radius:50%;
+  outline:2px solid var(--focus-orange); outline-offset:0; border-radius:50%;
 }
-.soc-thumb:focus-visible { outline:2px solid var(--navy-dark,#1B2236); outline-offset:3px; }
+.soc-thumb:focus-visible { outline:2px solid var(--focus-orange); outline-offset:0; }
 /* SC 2.5.8: the thumbs are 18x18 (324px^2 against 576 required) and in the
    adjacent state sit 6px apart, so the spacing exception fails too. A transparent
    pseudo-element gives a 24x24 target without changing anything visible. */
@@ -311,26 +334,102 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
   transition:top 0.15s;
 }
 .skip-link:focus { top:0; }
+.skip-link:focus-visible { outline: 2px solid var(--focus-orange); }
 
-/* SC 1.4.10 Reflow: .btn-group was overflow-x:auto with scrollbar-width:none, so at
-   320px five options — including the SELECTED one — sat off-screen behind a
-   deliberately suppressed scrollbar, with no cue that more existed. Wrapping keeps
-   every choice reachable without horizontal scrolling. */
-@media (max-width: 1079px) {
+/* <560px: btn-card collapses to small inline pill; container scrolls when buttons overflow. */
+@media (max-width: 559px) {
+  /* 2px padding matches the focus ring's outline-width: with overflow-x:auto the
+     scrollport clips anything painted outside its box, so a ring on the first/last
+     card (flush against this container's own edge) was losing its outer 2px with
+     no padding to paint into. scroll-padding-inline gives scrollIntoView() the same
+     2px buffer — it only guarantees the CARD's box (not its outline) is in view, so
+     without this the ring on a card scrolled to the edge is still clipped by the
+     viewport/scrollport boundary even though the card itself is fully visible. */
   .btn-group {
-    overflow-x: visible !important;
-    flex-wrap: wrap !important;
-    row-gap: 8px;
+    overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+    padding: 2px; scroll-padding-inline: 2px;
   }
-  /* flex:1 keeps buttons equal-width and filling the row at all sizes ≤959px.
-     flex-wrap:wrap on .btn-group above ensures every option stays reachable
-     at 320px without horizontal scroll (SC 1.4.10). */
-  .btn-group .btn-card, .btn-group .btn-pill { flex:1 !important; }
+  .btn-group::-webkit-scrollbar { display: none; }
+  /* flex-grow:1 lets cards/pills fill leftover width when the viewport is wider
+     than their combined natural size; flex-shrink:0 is what stops them being
+     squeezed narrower than that size once it exceeds the viewport (the group
+     scrolls instead). */
+  .btn-card, .btn-pill {
+    flex: 1 0 auto;
+    white-space: nowrap;
+  }
+  .btn-card {
+    flex-direction: row;
+    padding: 8px 12px;
+    gap: 4px;
+  }
+  .btn-card img { width: 12px; height: 12px; }
 }
 /* SC 2.5.8: the 18x18 thumbs can be driven to adjacent values, putting their
    centres 2.9px apart so even the 24px Spacing exception fails. MIN_SOC_GAP in the
    script keeps them >=24px apart in value space; this keeps the hit area honest. */
 .soc-thumb { touch-action: none; }
+.result-headline-row .q-icon-btn { color: #fff; }
+/* ════ Info modal ════
+   Behaviour ported from nala's #nala-range-modal (single reusable dialog,
+   title/body swapped per trigger by button id, via MODAL_CONTENT in JS).
+════════════════════════════ */
+#info-overlay { position: fixed; inset: 0; z-index: 200; }
+#info-overlay[hidden] { display: none; }
+#info-backdrop { position: absolute; inset: 0; background: rgba(27,34,54,0.6); }
+#info-modal {
+  position: absolute; top: 50%; left: 50%;
+  overflow-y: auto; max-height: calc(100% - 24px);
+  width: 91.66vw;
+  background-color: #fff;
+  border-radius: 20px;
+  opacity: 0;
+  transform: translate(-50%, -50%) translateY(12px);
+  transition: opacity 300ms, transform 300ms;
+  padding-bottom: 24px;
+  outline: none;
+  z-index: 1;
+}
+#info-overlay.is-open #info-modal {
+  opacity: 1;
+  transform: translate(-50%, -50%) translateY(0px);
+}
+@media (min-width: 960px) {
+  #info-modal { width: 58.33vw; }
+}
+.info-modal-header {
+  display: flex; position: sticky; z-index: 1; top: 0;
+  align-items: center; justify-content: space-between;
+  padding-block: 24px; padding-inline: min(4.16vw, 106.66px);
+  background-color: #fff;
+}
+.info-modal-title {
+  font-family: var(--font-head); font-weight: 700; font-size: 20px;
+  line-height: 1.2; color: var(--navy);
+}
+.info-modal-close {
+  position: absolute; top: 24px; right: min(4.16vw, 106.66px); z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border: none; background: transparent;
+  cursor: pointer; color: var(--navy); border-radius: 50%; padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.info-modal-close:focus-visible { outline: 2px solid var(--focus-orange); }
+.info-modal-body:focus-visible { outline: 2px solid var(--focus-orange); border-radius: 4px; }
+.info-modal-body {
+  font-family: var(--font-text); font-weight: 400; font-size: 16px; line-height: 1.5;
+  color: var(--navy); background-color: #fff;
+  padding: 0 min(4.16vw, 106.66px);
+}
+.info-modal-body p { margin: 0 0 16px; }
+.info-modal-body p:last-child { margin-bottom: 0; }
+.info-modal-body ul { margin: 0 0 16px; padding-left: 20px; }
+.info-modal-body ul:last-child { margin-bottom: 0; }
+.info-modal-body li { margin-bottom: 8px; }
+.info-modal-body li:last-child { margin-bottom: 0; }
+@media (prefers-reduced-motion: reduce) {
+  #info-modal { transition-duration: 0.001ms !important; }
+}
 </style>
 </head>
 <body>
@@ -395,7 +494,7 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
         <!-- Q1: Where to charge -->
         <div class="combo">
           <div class="question">
-            <span class="question-label"><span id="q-location">Where would you like to charge your vehicle?</span> <button class="q-icon-btn" aria-label="More information: Where would you like to charge your vehicle"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button></span>
+            <span class="question-label"><span id="q-location">Where would you like to charge your vehicle?</span> <button class="q-icon-btn" id="info-btn-location" aria-label="More information: Where would you like to charge your vehicle"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button></span>
           </div>
           <div class="btn-group" id="location-group" role="radiogroup" aria-labelledby="q-location">
             <button class="btn-card active" data-val="home" onclick="selectLocation(this)">
@@ -420,7 +519,7 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
         <!-- Q2: Charger type -->
         <div class="combo">
           <div class="question">
-            <span class="question-label"><span id="q-charger">Which type of charger will you use?</span> <button class="q-icon-btn" aria-label="More information: Which type of charger will you use"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button></span>
+            <span class="question-label"><span id="q-charger">Which type of charger will you use?</span> <button class="q-icon-btn" id="info-btn-charger" aria-label="More information: Which type of charger will you use"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button></span>
           </div>
           <div class="btn-group" id="charger-group" role="radiogroup" aria-labelledby="q-charger">
             <button class="btn-card" data-val="socket" onclick="selectCharger(this)">
@@ -441,7 +540,7 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
         <!-- Q3: Charging power -->
         <div class="combo">
           <div class="question">
-            <span class="question-label"><span id="q-power">What will be the charging power?</span> <button class="q-icon-btn" aria-label="More information: What will be the charging power"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button></span>
+            <span class="question-label"><span id="q-power">What will be the charging power?</span> <button class="q-icon-btn" id="info-btn-power" aria-label="More information: What will be the charging power"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button></span>
           </div>
           <div class="btn-group" id="power-group" role="radiogroup" aria-labelledby="q-power">
             <button class="btn-pill disabled" data-val="2.3" onclick="selectPower(this)">2.3 kW</button>
@@ -458,7 +557,7 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
         <!-- Q4: SOC range -->
         <div class="combo">
           <div class="question">
-            <span class="question-label"><span id="q-soc">What is your current and desired charge level?</span> <button class="q-icon-btn" aria-label="More information: What is your current and desired charge level"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button></span>
+            <span class="question-label"><span id="q-soc">What is your current and desired charge level?</span> <button class="q-icon-btn" id="info-btn-soc" aria-label="More information: What is your current and desired charge level"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button></span>
           </div>
           <div class="soc-wrap" id="soc-wrap">
             <div class="soc-track-area" id="soc-track">
@@ -490,12 +589,12 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
         <!-- Q5: Temperature -->
         <div class="combo">
           <div class="question">
-            <span class="question-label">What is the outside temperature?<button class="q-icon-btn" aria-label="More information: What is the outside temperature"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button></span>
+            <span class="question-label"><span id="q-temp">What is the outside temperature?</span><button class="q-icon-btn" id="info-btn-temp" aria-label="More information: What is the outside temperature"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button></span>
           </div>
           <div class="slider-wrap">
             <div class="slider-track-area">
               <input type="range" min="-20" max="30" step="10" value="20" id="temp-slider"
-                     aria-label="What is the outside temperature?" aria-valuetext="+20 degrees Celsius"
+                     aria-labelledby="q-temp" aria-valuetext="+20 degrees Celsius"
                 oninput="updateSlider('temp-slider','temp-tooltip','temp-thumb'); updateTime()">
               <div class="slider-thumb" id="temp-thumb">
                 <div class="slider-tooltip" id="temp-tooltip">+20°</div>
@@ -515,12 +614,12 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
           <div class="model-selection" id="model-selection">
             <div class="model-combo">
               <div class="question">
-                <span class="question-label">Which model are you interested in?</span>
+                <span class="question-label" id="q-model">Which model are you interested in?</span>
               </div>
               <div class="select-group">
                 <div class="fl-select">
-                  <span class="fl-label" id="trim-fl-label">The new ID.3 Neo</span>
-                  <select id="trim-select" aria-labelledby="trim-fl-label">
+                  <span class="fl-label"><span id="trim-model-static">Model: </span><span id="trim-fl-label">The new ID.3 Neo</span></span>
+                  <select id="trim-select" aria-labelledby="q-model trim-model-static trim-fl-label">
                     <optgroup label="The new ID.3 Neo">
                       <option value="Trend">Trend</option>
                       <option value="Life">Life</option>
@@ -540,9 +639,11 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
                 <div class="fl-select">
                   <span class="fl-label" id="battery-fl-label">Motor / Battery Capacity</span>
                   <select id="battery-select" aria-labelledby="battery-fl-label">
-                    <option value="50">125 kW (170 PS) · 50 kWh</option>
-                    <option value="58">140 kW (190 PS) · 58 kWh</option>
-                    <option value="79">170 kW (231 PS) · 79 kWh</option>
+                    <optgroup label="Motor / Battery Capacity">
+                      <option value="50">125 kW (170 PS) · 50 kWh</option>
+                      <option value="58">140 kW (190 PS) · 58 kWh</option>
+                      <option value="79">170 kW (231 PS) · 79 kWh</option>
+                    </optgroup>
                   </select>
                   <span class="fl-chevron">
                     <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M 12 17.713 C 11.55 17.713 11.127 17.535 10.811 17.213 L 1.025 7.216 L 1.975 6.285 L 11.76 16.281 C 11.89 16.412 12.109 16.413 12.24 16.280 L 22.025 6.285 L 22.975 7.216 L 13.19 17.212 C 12.873 17.536 12.45 17.713 12 17.713 Z" fill="rgba(0,30,80,1)"/></svg>
@@ -565,6 +666,7 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
             <div class="result-header">
               <div class="result-headline-row">
                 <span class="result-headline-label">Estimated charging time</span>
+                <button class="q-icon-btn" id="info-btn-time" aria-label="More information: Estimated charging time"><svg class="q-icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button>
               </div>
               <div class="time-display" id="time-display" aria-hidden="true">–:– h</div>
               <p class="sr-only" id="time-live" aria-live="polite"></p>
@@ -580,7 +682,7 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
       <div class="sticky-result" id="sticky-result" aria-hidden="true">
         <div class="result-header">
           <div class="result-headline-row">
-            <span class="result-headline-label" id="sticky-model-label">The new ID.3 Neo Trend</span>
+            <span class="result-headline-label">Estimated charging time</span>
           </div>
           <div class="time-display" id="sticky-time-display" aria-hidden="true">–:– h</div>
         </div>
@@ -879,6 +981,13 @@ function buildTimeSlots(container, hours, minutes) {
     unit.textContent = ' h';
     unit.style.marginLeft = '4px';
     container.appendChild(unit);
+
+    // Freshly-created reels have no inline transform yet. Without a flush here,
+    // the transform set below lands in the same tick as the creation above, so
+    // the browser never paints the "from" position and the 1.2s transition on
+    // .slot-reel is skipped — the slot-machine effect silently doesn't play
+    // when the digit count changes (e.g. crossing the 9:59 / 10:00 boundary).
+    void container.offsetHeight;
   }
 
   const allDigits = [...hDigits, ...mDigits];
@@ -987,7 +1096,8 @@ function updateBatteryOptions() {
   if (!sel) return;
   const opts = batteryOptions[trim] || batteryOptions.Trend;
   const current = sel.value;
-  sel.innerHTML = opts.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+  sel.innerHTML = '<optgroup label="Motor / Battery Capacity">'
+    + opts.map(o => `<option value="${o.value}">${o.label}</option>`).join('') + '</optgroup>';
   if (opts.some(o => o.value === current)) sel.value = current;
 }
 
@@ -1015,6 +1125,19 @@ window.addEventListener('DOMContentLoaded', () => {
   updateBatteryOptions();
   updateCarImage();
 
+  // Below 560px .btn-group becomes a horizontal scroller (overflow-x:auto), so a
+  // card reached by Tab can sit partly or fully outside the visible scrollport.
+  // Native focus-scroll is not consistent enough across browsers to rely on, so
+  // scroll the focused card fully into view ourselves. `inline:'nearest'` only
+  // moves the axis that actually scrolls (the group), never the page itself.
+  document.querySelectorAll('.btn-group').forEach((group) => {
+    group.addEventListener('focusin', (e) => {
+      if (e.target.classList.contains('btn-card')) {
+        e.target.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      }
+    });
+  });
+
   const trimFlLabel = document.getElementById('trim-fl-label');
   const trimGroupLabels = {
     Trend:'The new ID.3 Neo', Life:'The new ID.3 Neo', Style:'The new ID.3 Neo',
@@ -1034,19 +1157,6 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('battery-select')?.addEventListener('change', updateTime);
 
   // Sticky bar
-  const trimNames = {
-    Trend:'The new ID.3 Neo Trend', Life:'The new ID.3 Neo Life', Style:'The new ID.3 Neo Style',
-    PoloTrend:'The new ID. Polo Trend', PoloLife:'The new ID. Polo Life',
-    PoloStyle:'The new ID. Polo Style', PoloGTI:'The new ID. Polo GTI'
-  };
-  const stickyModelLabel = document.getElementById('sticky-model-label');
-  function updateStickyLabel() {
-    const trim = document.getElementById('trim-select')?.value ?? 'Trend';
-    if (stickyModelLabel) stickyModelLabel.textContent = trimNames[trim] || trim;
-  }
-  document.getElementById('trim-select')?.addEventListener('change', updateStickyLabel);
-  updateStickyLabel();
-
   const stickyBar = document.getElementById('sticky-result');
   const inlineResult = document.querySelector('.result-section');
   stickyBar?.addEventListener('click', () => {
@@ -1080,6 +1190,172 @@ window.addEventListener('DOMContentLoaded', () => {
 (function bindSelectHandlers(){
   document.getElementById('trim-select').addEventListener('change', function () { updateBatteryOptions(); updateCarImage(); updateTime(); });
   document.getElementById('battery-select').addEventListener('change', function () { updateTime(); });
+})();
+</script>
+
+<!-- ════ INFO MODAL (shared across all "More information" buttons) ════ -->
+<div id="info-overlay" hidden>
+  <div id="info-backdrop" aria-hidden="true"></div>
+  <div id="info-modal" role="dialog" aria-modal="true"
+       aria-labelledby="info-modal-title" tabindex="-1">
+    <div class="info-modal-header" role="presentation">
+      <h2 id="info-modal-title" class="info-modal-title"></h2>
+    </div>
+    <div class="info-modal-body" id="info-modal-body" tabindex="0"></div>
+    <button type="button" id="info-modal-close" class="info-modal-close"
+            aria-label="Close">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"
+           focusable="false" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19 5L5 19M5 5l14 14" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+/* ── Info modal — one reusable dialog behind every "More information" button.
+   Behaviour ported from nala's #nala-range-modal: focus lands on the body
+   paragraph (not the close button), since a screen reader announces the
+   dialog's accessible name (the h2) on open but not the body text — landing
+   on the close button would leave the explanation unread. `inert` on the
+   background makes the 2-stop focus trap robust: without it a trip out to
+   browser chrome and back could land focus on a background control. */
+(function initInfoModal(){
+  var overlay = document.getElementById('info-overlay');
+  var modal = document.getElementById('info-modal');
+  var title = document.getElementById('info-modal-title');
+  var body = document.getElementById('info-modal-body');
+  var closeBtn = document.getElementById('info-modal-close');
+  var backdrop = document.getElementById('info-backdrop');
+
+  var MODAL_CONTENT = {
+    'info-btn-location': {
+      title: 'Charging location',
+      body: [
+        'Depending on where you want to charge your e-vehicle, there are different charging offers. Please select your desired charging location.',
+        'The journey to the charging location also determines how the battery heats up and what temperature the battery is at when charging starts. This temperature influences the charging time. In general, the battery charges fastest at a battery temperature of around 20–30 degrees, whereas the charging time is prolonged at low temperatures. You can find more information here.'
+      ]
+    },
+    'info-btn-charger': {
+      title: 'Charger type',
+      body: ['Please select the loading option that is to be used for the simulation.']
+    },
+    'info-btn-power': {
+      title: 'Charging power',
+      body: ['Please select the available charging power.']
+    },
+    'info-btn-soc': {
+      title: 'Charging level',
+      body: [
+        'Please select here the charge levels to be used for the simulation.',
+        'The left slider describes the remaining capacity of the battery before the start of the charging process; with the right slider you set the desired charge level. The charging time depends largely on the total capacity (size) of the battery as well as the initial and the desired state of charge.'
+      ]
+    },
+    'info-btn-temp': {
+      title: 'Outside temperature',
+      body: [
+        'Learn here how the outside temperature affects the charging time by setting the respective outside temperature with the slider.',
+        'In general, the battery charges fastest at a battery temperature of around 20–30 degrees, whereas the charging time increases at low temperatures. This effect is particularly noticeable at high charging powers, which is why the temperature effect is only taken into account for DC charging in the simulation.'
+      ]
+    },
+    'info-btn-time': {
+      title: 'How your estimated charging time is calculated',
+      body: [
+        'The simulated indicative charging time in minutes or hours results from:',
+        { list: [
+          'The charging power for the vehicle model (in kW; setting via vehicle selection)',
+          'The charging power of the charging pole, wallbox or socket (in kW; display depending on the set charging location)',
+          'The amount of charged current (in kWh; setting via From–To)',
+          'The state of charge at the start of the charging process (setting via From)',
+          'The battery temperature (setting and simulation via outside temperature and charging location)'
+        ] }
+      ]
+    }
+  };
+
+  var triggers = Object.keys(MODAL_CONTENT)
+    .map(function (id) { return document.getElementById(id); })
+    .filter(Boolean);
+  if (!overlay || !triggers.length) return;
+
+  var bgRegions = [document.getElementById('topbar'), document.getElementById('content')];
+  function setBackgroundInert(on) {
+    bgRegions.forEach(function (el) {
+      if (!el) return;
+      if (on) el.setAttribute('inert', ''); else el.removeAttribute('inert');
+    });
+  }
+
+  var lastTrigger = null, modalIsOpen = false;
+
+  function renderBody(blocks) {
+    body.textContent = '';
+    (blocks || []).forEach(function (block) {
+      if (block && block.list) {
+        var ul = document.createElement('ul');
+        block.list.forEach(function (item) {
+          var li = document.createElement('li');
+          li.textContent = item;
+          ul.appendChild(li);
+        });
+        body.appendChild(ul);
+      } else {
+        var p = document.createElement('p');
+        p.textContent = block;
+        body.appendChild(p);
+      }
+    });
+  }
+
+  var focusAnchor = null;
+
+  function openInfoModal(trigger) {
+    lastTrigger = trigger;
+    var content = MODAL_CONTENT[trigger.id] || { title: '', body: [] };
+    title.textContent = content.title;
+    renderBody(content.body);
+    focusAnchor = body;
+    overlay.hidden = false;
+    setBackgroundInert(true);
+    requestAnimationFrame(function () { overlay.classList.add('is-open'); });
+    focusAnchor.focus();
+    modalIsOpen = true;
+  }
+
+  function closeInfoModal() {
+    overlay.classList.remove('is-open');
+    var done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      overlay.hidden = true;
+      setBackgroundInert(false);
+      if (lastTrigger) lastTrigger.focus();
+      modalIsOpen = false;
+    }
+    modal.addEventListener('transitionend', finish, { once: true });
+    setTimeout(finish, 350);
+  }
+
+  triggers.forEach(function (btn) {
+    btn.addEventListener('click', function () { openInfoModal(btn); });
+  });
+  closeBtn.addEventListener('click', closeInfoModal);
+  backdrop.addEventListener('click', closeInfoModal);
+
+  modal.addEventListener('keydown', function (e) {
+    if (e.key !== 'Tab' || !focusAnchor) return;
+    e.preventDefault();
+    if (document.activeElement === closeBtn && !e.shiftKey) { focusAnchor.focus(); }
+    else if (document.activeElement === focusAnchor && e.shiftKey) { closeBtn.focus(); }
+    else if (e.shiftKey) { focusAnchor.focus(); }
+    else { closeBtn.focus(); }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && modalIsOpen) closeInfoModal();
+  });
 })();
 </script>
 </body>

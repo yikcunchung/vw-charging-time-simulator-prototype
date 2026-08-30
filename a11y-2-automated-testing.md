@@ -75,10 +75,10 @@ Viewports: 1440×900, 768×1024, 390×844, 320×640, and 320×256 @ dsf 4 (liter
 
 | Measure | Value |
 |---|---|
-| Nodes (1440×900) | 229 |
-| Named interactive / graphic nodes | 37 |
+| Nodes (1440×900) | 236 |
+| Named interactive / graphic nodes | 35 |
 | **Unnamed** | **0** |
-| Focusable controls | 24 |
+| Focusable controls | 21 |
 
 > **This is where the one real defect was found.** Before the fix, **7 `role=image` nodes were exposed unnamed** — invisible to axe, WAVE and Nu alike. See trap 10.
 
@@ -116,6 +116,13 @@ large-text threshold never applies).
 **SC 1.4.12 Text Spacing — pass.** With all four overrides applied (`line-height:1.5`,
 `letter-spacing:0.12em`, `word-spacing:0.16em`, `p margin-bottom:2em`) at 1440 / 390 / 320:
 **no newly clipped element, no control lost, no horizontal scroll.**
+
+> **One nuance the detector accounts for.** The trim-select and battery-select floating labels
+> ("Model: The new ID.3 Neo" / "Motor / Battery Capacity") do still visually truncate at some
+> widths under these overrides. That is not counted as loss: each select's `<option>`s are wrapped
+> in an `<optgroup>` whose `label` matches the truncated string exactly, so opening the select —
+> its own normal operation — reveals the same text in full. A label whose content has no such
+> match inside its own control (there is none here) would still fail this check.
 
 > **Detector validated.** A canary that fits at the default line-height and overflows only at 1.5
 > was injected and *was* detected. A first canary was already clipped before the override and

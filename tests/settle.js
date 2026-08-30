@@ -38,7 +38,7 @@ const CHECKED_TOTAL = 3;
 // Tab stops in the default state, identical at 1440x900, 768x1024, 390x844 and
 // 320x256@dsf4: skip link, 5 info buttons, 4 location, 2 enabled chargers,
 // 2 enabled powers, 2 SOC thumbs, temp slider, 2 selects, CTA.
-const TAB_STOPS = 20;
+const TAB_STOPS = 21;
 // From index.html. Enforced identically on the keyboard, drag and track-click paths.
 const MIN_SOC_GAP = 24;
 // The nine rules axe-core ships with `enabled: false`. target-size is SC 2.5.8:
@@ -202,13 +202,25 @@ async function tabWalk(page, max = 30) {
       const cs = getComputedStyle(a);
       const r = a.getBoundingClientRect();
       const sib = a.nextElementSibling ? getComputedStyle(a.nextElementSibling) : null;
+      // .btn-group is a bounded, keyboard-reachable horizontal carousel (the
+      // permitted SC 1.4.10 exception) that scrolls its focused card into view.
+      // getBoundingClientRect() is viewport-relative, so a card's rect already
+      // reflects that inner scroll — only the OUTER page scroll was being added
+      // back below, so a card revealed by scrolling this ancestor still measured
+      // short of its true position in the unscrolled layout. Sum every scrollable
+      // ancestor's own offset the same way window.scrollX/Y already is.
+      let ancestorX = 0, ancestorY = 0;
+      for (let n = a.parentElement; n; n = n.parentElement) {
+        ancestorX += n.scrollLeft || 0;
+        ancestorY += n.scrollTop || 0;
+      }
       return {
         key: a.id || `${a.tagName}.${String(a.className).split(' ')[0]}`,
         name: (a.getAttribute('aria-label') || a.textContent || '').replace(/\s+/g, ' ').trim(),
         domIndex: window.__domOrder.indexOf(a),
-        top: r.top + window.scrollY,
-        bottom: r.bottom + window.scrollY,
-        left: r.left + window.scrollX,
+        top: r.top + window.scrollY + ancestorY,
+        bottom: r.bottom + window.scrollY + ancestorY,
+        left: r.left + window.scrollX + ancestorX,
         w: r.width, h: r.height,
         tabIndexAttr: a.getAttribute('tabindex'),
         outline: `${cs.outlineWidth}/${cs.outlineStyle}/${cs.outlineColor}`,

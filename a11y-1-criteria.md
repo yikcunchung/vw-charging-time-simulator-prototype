@@ -1,7 +1,7 @@
 # A11y 1 of 3 — WCAG 2.2 criterion checklist
 
 **App:** VW Charging Time Simulator (`charging-time-simulator`) — a single-page simulator.
-**Audited:** 2026-08-22 against the live deployment.
+**Audited:** 2026-08-29 against the current build (local; not yet pushed to the live deployment).
 **Deployed at:** https://yikcunchung.github.io/vw-charging-time-simulator-prototype/
 **Scope:** the whole page. This app is standalone, so there is no component-versus-page split and
 nothing is out of scope. **PDFs are excluded** — the app ships none; they would be a separate
@@ -55,7 +55,7 @@ criteria are not required and are not listed.
 | SC | Name | Lvl | Relevant | Status | Evidence / what to do |
 |---|---|---|---|---|---|
 | **1.3.1** | Info and Relationships | A | Yes | ✅ Pass | One `h1`, `role="banner"` topbar, `main`, two named `<select>`s, card and pill button groups, and a two-thumb ARIA slider. axe 0 violations on structure rules at 98 rules. |
-| **1.3.2** | Meaningful Sequence | A | Yes | ✅ Pass* | DOM order matches visual order across all 20 Tab stops. |
+| **1.3.2** | Meaningful Sequence | A | Yes | ✅ Pass* | DOM order matches visual order across all 21 Tab stops. |
 | **1.3.3** | Sensory Characteristics | A | Yes | ✅ Pass* | No instruction relies on shape, size or position. |
 | **1.3.4** | Orientation | AA | Yes | ✅ Pass | No `@media (orientation:)` rule exists anywhere. Nothing locks orientation. |
 | **1.3.5** | Identify Input Purpose | AA | No | ⚪ N/A | No field collects information *about the user* — no name, address, email or payment. The number inputs are tariff prices, not personal data, so `autocomplete` has nothing to identify. |
@@ -68,11 +68,11 @@ criteria are not required and are not listed.
 | **1.4.1** | Use of Color | A | Yes | ✅ Pass* | Colour is never the only channel — selected cards and pills carry their state in the accessibility tree, not just in their fill. |
 | **1.4.2** | Audio Control | A | No | ⚪ N/A | No audio. `audio[autoplay]` / `video[autoplay]` count is 0. |
 | **1.4.3** | Contrast (Minimum) | AA | Yes | ✅ Pass | **All 18 `color-contrast` incomplete nodes resolved by hand on composited pixels — worst 14.50:1**, against 4.5:1. axe went incomplete because of a subtle full-height page gradient, not because anything was close. |
-| **1.4.4** | Resize Text | AA | Yes | ✅ Pass | 400% zoom (320×256 @ dsf 4): 0 violations, no horizontal scroll, all 20 controls present. |
+| **1.4.4** | Resize Text | AA | Yes | ✅ Pass | 400% zoom (320×256 @ dsf 4): 0 violations, all 21 controls present (reachable via the bounded, ≤320px-wide carousel cards described under 1.4.10 — see that row's G225 note — rather than any SC exception). |
 | **1.4.5** | Images of Text | AA | Yes | ✅ Pass* | No images of text. All text is live text. |
-| **1.4.10** | Reflow | AA | Yes | ✅ Pass | No horizontal scroll at 320 / 390 / 768 / 1440 or at 400% zoom; the control set is identical at every width. |
+| **1.4.10** | Reflow | AA | Yes | ✅ Pass | No *page-level* horizontal scroll at 320 / 390 / 768 / 1440 or at 400% zoom, and the control set is identical at every width. Below 560px the location / charger / power button groups become a bounded, keyboard-operable horizontal carousel (`overflow-x:auto`, every card scrolls fully into view on focus). Each card's own width (icon + one-line, `white-space:nowrap` label — worst case "Charging station (DC)") is well under 320 CSS px, so reading any single card never itself requires horizontal scrolling; the carousel's scroll is only used to move *between* cards. That is **G225** (a sufficient technique for this SC: a row of ≤320px panels on an otherwise vertically-scrolling page), not the SC's own normative exception, which is narrower and applies only to content that *requires* two-dimensional layout for its usage or meaning (the SC's own examples: maps, diagrams, data tables, code indentation) — a card selector carries no such requirement, so that exception does not apply here and was the wrong clause to cite. |
 | **1.4.11** | Non-text Contrast | AA | Yes | ✅ Pass* | Control boundaries and the focus ring are navy on light — far above 3:1. |
-| **1.4.12** | Text Spacing | AA | Yes | ✅ Pass | All four overrides applied (line-height 1.5, letter-spacing .12em, word-spacing .16em, paragraph 2em) at 1440 / 390 / 320: **no newly clipped element, no control lost, no horizontal scroll.** Detector validated with a canary that fits at the default line-height and overflows at 1.5. |
+| **1.4.12** | Text Spacing | AA | Yes | ✅ Pass | All four overrides applied (line-height 1.5, letter-spacing .12em, word-spacing .16em, paragraph 2em) at 1440 / 390 / 320: **no newly clipped element, no control lost, no horizontal scroll.** Detector validated with a canary that fits at the default line-height and overflows at 1.5. `.select-group` stacks the trim-select and battery-select vertically, unconditionally (no breakpoint gating), so each floating label ("Model: The new ID.3 Neo" / "Motor / Battery Capacity") gets the full row width at every viewport, including 960–1024px where this app's own grid narrows the shared column below both mobile and desktop widths — verified zero truncation across all tested widths. As a secondary safeguard, each select's `<option>`s are also wrapped in an `<optgroup>` whose `label` matches the floating label text (e.g. `<optgroup label="Motor / Battery Capacity">`), so even if content ever grows past the stacked width, opening the select — its own standard operation — reveals the full text natively. |
 | **1.4.13** | Content on Hover or Focus | AA | No | ⚪ N/A | No hover- or focus-triggered overlay. |
 
 
@@ -83,8 +83,8 @@ criteria are not required and are not listed.
 
 | SC | Name | Lvl | Relevant | Status | Evidence / what to do |
 |---|---|---|---|---|---|
-| **2.1.1** | Keyboard | A | Yes | ✅ Pass | All 20 controls keyboard-operable. The two SOC slider thumbs were driven with real keys: ArrowRight/Left ±1, ArrowUp/Down ±1, PageUp/PageDown ±10, Home and End, each clamped correctly against the enforced 24-point minimum gap, with `aria-valuenow` tracking every step. |
-| **2.1.2** | No Keyboard Trap | A | Yes | ✅ Pass | No trap — Tab cycles all 20 stops and returns to the first. Both slider thumbs are separate Tab stops. |
+| **2.1.1** | Keyboard | A | Yes | ✅ Pass | All 21 controls keyboard-operable. The two SOC slider thumbs were driven with real keys: ArrowRight/Left ±1, ArrowUp/Down ±1, PageUp/PageDown ±10, Home and End, each clamped correctly against the enforced 24-point minimum gap, with `aria-valuenow` tracking every step. |
+| **2.1.2** | No Keyboard Trap | A | Yes | ✅ Pass | No trap — Tab cycles all 21 stops and returns to the first. Both slider thumbs are separate Tab stops. |
 | **2.1.4** | Character Key Shortcuts | A | No | ⚪ N/A | No single-character key shortcuts are registered. |
 
 
@@ -109,11 +109,11 @@ criteria are not required and are not listed.
 |---|---|---|---|---|---|
 | **2.4.1** | Bypass Blocks | A | Yes | ✅ Pass | `a.skip-link → #main`, the first Tab stop. |
 | **2.4.2** | Page Titled | A | Yes | ✅ Pass | `<title>Volkswagen Charging Time Simulator</title>` — descriptive and unique. |
-| **2.4.3** | Focus Order | A | Yes | ✅ Pass | 20 Tab stops in DOM order matching visual order, verified at 1440×900 and 390×844 with real Tab presses. |
+| **2.4.3** | Focus Order | A | Yes | ✅ Pass | 21 Tab stops in DOM order matching visual order, verified at 1440×900 and 390×844 with real Tab presses. |
 | **2.4.4** | Link Purpose (In Context) | A | No | ⚪ N/A | No links other than the skip link, which is named. |
 | **2.4.5** | Multiple Ways | AA | No | ⚪ N/A | A standalone single page. SC 2.4.5 applies to a *set* of web pages; there is no set. |
 | **2.4.6** | Headings and Labels | AA | Yes | ✅ Pass | One `h1`, no skipped levels. Each question label describes its control group. |
-| **2.4.7** | Focus Visible | AA | Yes | ✅ Pass | Every one of the 20 stops shows a visible focus indicator; the slider thumbs draw `outline: 2px solid rgb(41,48,67)` at 3px offset. |
+| **2.4.7** | Focus Visible | AA | Yes | ✅ Pass | Every one of the 21 stops shows a visible focus indicator; every control, including the slider thumbs, draws the same `outline: 2px solid rgb(200,108,3)` at 0px offset (`--focus-orange`). |
 | **2.4.11** | Focus Not Obscured (Minimum) | AA | Yes | ✅ Pass | No fixed or sticky element overlaps a focused control; all measured inside the viewport after settling. |
 
 
@@ -171,7 +171,7 @@ criteria are not required and are not listed.
 | SC | Name | Lvl | Relevant | Status | Evidence / what to do |
 |---|---|---|---|---|---|
 | **4.1.1** | Parsing | A | Yes | ✅ Pass | Nu HTML validator: **0 errors**. Obsolete in WCAG 2.2 but normative under EN 301 549 clause 9.4.1.1, so it is checked and kept. |
-| **4.1.2** | Name, Role, Value | A | Yes | ✅ Pass | **AX tree: 229 nodes, 37 named, 0 unnamed, 0 duplicate role+name** (the `Trend/Life/Style ×2` pairs are one `<select>` split across two `<optgroup>`s, disambiguated by the group). Both SOC thumbs expose `role="slider"`, a unique name, and `aria-valuenow`/`min`/`max`, written from all three update paths — keyboard, drag and track click. `#trim-select`'s `aria-labelledby` concatenates the visible question ("Which model are you interested in?") with the floating label showing the current trim group: name is "Which model are you interested in? The new ID.3 Neo", updating to "… The new ID. Polo" on change. The purpose-describing half is permanently stable; only the value half mutates, same as any label describing a control whose display also shows the current value. |
+| **4.1.2** | Name, Role, Value | A | Yes | ✅ Pass | **AX tree: 236 nodes, 0 unnamed, 0 duplicate role+name** (the `Trend/Life/Style ×2` pairs are one `<select>` split across two `<optgroup>`s, disambiguated by the group). Both SOC thumbs expose `role="slider"`, a unique name, and `aria-valuenow`/`min`/`max`, written from all three update paths — keyboard, drag and track click. `#trim-select`'s `aria-labelledby` concatenates the visible question ("Which model are you interested in?"), a static "Model: " prefix, and the floating label showing the current trim group: name is "Which model are you interested in? Model: The new ID.3 Neo", updating to "… Model: The new ID. Polo" on change. The purpose-describing two-thirds is permanently stable; only the trailing value mutates, same as any label describing a control whose display also shows the current value. |
 | **4.1.3** | Status Messages | AA | Yes | ✅ Pass | `#time-live` (`aria-live="polite"`, in the DOM at load, 1×1 clipped with an explicit white `color`) announces every recomputation — driven through 4 distinct announcements, e.g. "Charging time 2 hours 50 minutes" → "2 hours 11 minutes" → "0 hours 40 minutes". |
 
 ---

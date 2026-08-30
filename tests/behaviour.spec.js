@@ -16,7 +16,7 @@ const {
   RADIO_TOTAL, CHECKED_TOTAL, TAB_STOPS, MIN_SOC_GAP,
 } = require('./settle');
 
-const AUDITED_RING = '2px/solid/rgb(41, 48, 67)';
+const AUDITED_RING = '2px/solid/rgb(200, 108, 3)';
 
 /** aria-valuenow / aria-valuetext / activeElement, read together. */
 const socState = (page) => page.evaluate(() => ({
@@ -569,24 +569,27 @@ test.describe('A3 — select names are stable', () => {
       return { id, lb: s.getAttribute('aria-labelledby'), name: window.__nameOf(s) };
     }));
     const before = await names();
-    expect(before[0].lb).toBe('trim-fl-label');
+    expect(before[0].lb).toBe('q-model trim-model-static trim-fl-label');
     expect(before[1].lb).toBe('battery-fl-label');
     expect(before[1].name, 'the battery label must survive verbatim, "/" and all')
       .toBe('Motor / Battery Capacity');
 
-    // #trim-fl-label is rewritten by JS on change (Neo <-> Polo), which is exactly
-    // the shape of the bug where the accessible name moves with the value. It is
-    // still a LABEL — it names the family — so what must hold is that the name
-    // keeps tracking the visible text, and that #battery-select's does not move.
+    // #trim-fl-label is rewritten by JS on change (Neo <-> Polo) — the accessible
+    // name still moves with the value, but it is now always led by the static
+    // question text ("Which model are you interested in?"), so purpose is never
+    // lost even though the trailing family name does change. #battery-select
+    // must still not move at all.
     await page.selectOption('#trim-select', 'PoloGTI');
     await page.waitForFunction(() =>
       document.getElementById('trim-fl-label').textContent === 'The new ID. Polo');
     const after = await names();
     expect(after[1].name, 'the battery name must not change when the value does')
       .toBe(before[1].name);
+    const question = await page.locator('#q-model').textContent();
+    const modelStatic = await page.locator('#trim-model-static').textContent();
     const visible = await page.locator('#trim-fl-label').textContent();
-    expect(after[0].name, 'the trim name must still be its visible label')
-      .toBe(visible.trim());
+    expect(after[0].name, 'the trim name must be the question, the static "Model:" prefix, then the visible floating label')
+      .toBe(`${question.trim()} ${modelStatic.trim()} ${visible.trim()}`);
   });
 
   test('both selects are reachable by real Tab and keep focus through a change', async ({ page }) => {

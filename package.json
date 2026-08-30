@@ -6,7 +6,8 @@
   "scripts": {
     "test": "playwright test",
     "test:headed": "playwright test --headed",
-    "test:report": "playwright show-report"
+    "test:report": "playwright show-report",
+    "test:desktop": "playwright test --project=desktop-1440"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.1",
