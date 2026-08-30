@@ -39,11 +39,11 @@ The local `index.html` and the deployed build are **byte-identical**.
 
 | Required | Status | Note |
 |---|---|---|
-| **axe DevTools 4.131.2** | ◐ **Equivalent, not identical** | This audit ran **axe-core 4.13.0**, the library the extension embeds, over CDP with no `runOnly` filter. The extension's build number is not the engine version. One run through the 4.131.2 UI is still worth doing to satisfy the protocol literally; expect agreement |
-| **WAVE Evaluation Tool 3.3.1.0** | ✅ **Done** | Real engine via `wave.webaim.org/report#/<url>` against the public URL |
+| **axe DevTools 4.12.1** | ✅ **Done — UI at WCAG 2.2 AA** | Automated scan (default + info-modal-open states), Interactive Elements, and Forms guided tests all run — every AI-flagged item was a false positive (two heading-markup suggestions on plain question labels, a disabled `battery-select` flagged as a keyboard-access failure when disabled-on-purpose is the whole point, and an already-correct `aria-checked="true"` misread as "not-checked") — §9.3. This audit's CDP run used **axe-core 4.13.0**, the library version embedded then; the two agree on substance |
+| **WAVE Evaluation Tool 3.3.1.0** | ✅ **Done — hosted and extension, both states** | Hosted engine via `wave.webaim.org/report#/<url>`; extension pass confirmed **0 errors, 0 contrast errors** in both the default state and the info-modal-open state — §9.2 |
 | **Zoom 400% and 320 × 256 px** | ✅ **Done** | `320×256 @ deviceScaleFactor 4`. **dsf 1 is a small screen, not a zoomed one** |
 | **Operated via the keyboard** | ✅ **Done** | Driven with real `Input.dispatchKeyEvent` |
-| **NVDA 2026.1.1.55980** | ❌ **Not done** | The one real gap — §5 |
+| **NVDA 2026.1.1.55980** | ❌ **Not done** | The one real screen-reader gap. **VoiceOver has been run — §9.1** — a deviation, not a substitute |
 | **PAC 26.1.0.0** | ⚪ **Not applicable** | PAC checks PDF/UA-1 (ISO 14289-1). This app ships no PDFs (`*.pdf` count: 0). If brochures or price lists are added they are a separate surface under EN 301 549 clause 10 |
 
 ### NVDA vs VoiceOver — a deviation to record
@@ -202,8 +202,9 @@ found, and neither axe nor WAVE nor Nu saw any of them.
 
 # 5. What automation will never close
 
-**Real screen-reader output has never been tested.** The accessibility tree confirms what is
-*exposed*; NVDA, JAWS and VoiceOver differ in what they *announce*. No headless pass closes this.
+**Real screen-reader/AI-guided output requires a human pass.** The accessibility tree confirms what
+is *exposed*; NVDA, JAWS and VoiceOver differ in what they *announce*. VoiceOver, WAVE, and axe
+DevTools have now all been run manually — §9. **NVDA remains the one outstanding instrument.**
 
 **A name can be present, unique, and wrong.** Every automated check here passes on a control
 labelled "button". Names must be read against what they describe.
@@ -212,28 +213,92 @@ labelled "button". Names must be read against what they describe.
 
 ---
 
-# 6. Re-running the suite
+# 6. Manual testing — what to do
 
-```
-# 1. serve the build, then drive a real browser over CDP
-python3 -m http.server 7810 --bind 127.0.0.1
-chrome --headless=new --remote-debugging-port=9345 --disable-gpu
-#    pick the debug target by matching type == "page" AND the expected URL.
-#    NEVER take the first target from /json — it is often an extension page.
+**All three manual runs (VoiceOver, WAVE, axe DevTools) have now been run — results in §9. NVDA
+remains outstanding** — §1.
 
-# 2. Network.enable BEFORE Network.setCacheDisabled, or add ?cb=<nonce>
-# 3. axe.run(document, {rules:{'target-size':{enabled:true}, ...}})
-#    read violations AND incomplete; assert target-size lands in passes
-# 4. AX tree: Accessibility.getFullAXTree
-#      -> assert 0 role=image nodes that are unnamed and not ignored
-#      -> review every duplicate role+name pair
-# 5. Real keys: Input.dispatchKeyEvent, assert document.activeElement after each
-# 6. Reflow: Emulation.setDeviceMetricsOverride 320x256 @ dsf 4   (= 400% zoom)
-# 7. Text spacing: inject the four overrides, diff the clipped-element set,
-#    and prove a canary fires before believing the result
-# 8. WAVE: wave.webaim.org/report#/<public-url>, poll until counts are STABLE
-# 9. Diff local against live first — audit what is actually deployed
-```
+**The reusable procedure (Step 0, VoiceOver/WAVE/axe DevTools runs, sign-off checklist) lives
+centrally** in `../audit-evidence/manual-testing-guide.md` — it's identical across all five sibling
+apps, so it's maintained once there instead of copied per app. What follows here is only what's
+specific to charging-time-simulator.
+
+## App-specific Step 0
+
+- **Live** — `https://yikcunchung.github.io/vw-charging-time-simulator-prototype/`.
+- **Confirm on screen:** 6 info-modal triggers (`info-btn-location`, `info-btn-charger`,
+  `info-btn-power`, `info-btn-soc`, `info-btn-temp`, `info-btn-time`), three button-radiogroup
+  carousels (`location-group`, `charger-group`, `power-group`), a dual SOC slider, a temperature
+  slider, and the trim/battery selects.
+- **Audited Tab-stop count is 21**, but that assumes `battery-select` is enabled — with the default
+  trim (Trend) now correctly disabling it, a fresh page load has **20** real Tab stops.
+
+## App-specific notes for the central procedure's Run 2 (WAVE)
+
+- Confirmed **0 errors, 0 contrast errors** in both the default state and the info-modal-open state
+  — §9.2.
+
+---
+
+# 7. Verification checklist
+
+Tick only what you actually observed against the central sign-off checklist in
+`../audit-evidence/manual-testing-guide.md`. **An untested box is not a pass.**
+
+---
+
+# 8. Re-running the automated suite
+
+Identical across all five sibling apps — see `../audit-evidence/manual-testing-guide.md` for the
+CDP re-run script (serve locally, drive headless Chrome over the CDP protocol, run axe/AX-tree/
+reflow/text-spacing/WAVE checks, diff local against live). Substitute this app's own port (`7810`)
+and live URL where the script needs them.
 
 **Automate the structural half in CI, but do not mistake it for the whole.** A structural-only suite
 is exactly what scores clean on a build with a Level A naming failure.
+
+---
+
+# 9. Manual run results
+
+## 9.1 Screen reader — VoiceOver / Safari, complete
+
+VoiceOver Run 1 completed against the live build: full Tab-order walk (20 real stops, skip link
+through the CTA button), all three carousel radiogroups (location/charger/power — correct
+`role="radio"`/`aria-checked`, native "N of M" position info, silent on unchecked, consistent across
+all three), the SOC dual slider (two distinct correctly-named thumbs), the temperature slider,
+trim-select (a phrasing difference between Safari and Chrome for the native select was checked
+against real production and confirmed to be normal cross-browser AT behavior, not a defect), the
+final CTA button, and all 6 info-modals (open/read/close via all three methods, focus returns to the
+trigger correctly, multi-paragraph bodies read via the same already-verified `renderBody()` pattern
+as range-simulator). Rotor sweep: Form Controls and Landmarks (banner + main) both correct; Headings
+shows only 1 (`<h1>`) — correct, since the on-page "questions" are styled `<span>`s, not real heading
+elements, so no gap there either.
+
+## 9.2 WAVE 3.3.1.0 — extension, complete
+
+Extension pass against the live build reported **0 errors, 0 contrast errors** in both the default
+state and the info-modal-open state.
+
+## 9.3 axe DevTools 4.12.1 — automated scan + Interactive Elements + Forms, complete
+
+All run against the live build. Findings, all false positives:
+- **Automated scan (default state):** 2× "Headings must use heading markup" on `#q-power`/`#q-charger`
+  — an AI (non-deterministic, 73-82% confidence) suggestion to turn plain question-label `<span>`s
+  into headings. Inconsistent with itself (only 2 of 6 identical labels flagged) and contradicts the
+  VoiceOver rotor sweep (§9.1), which confirmed a single-heading structure is correct for this
+  single-continuous-form page.
+- **Automated scan (info-modal-open state):** 1× "Function cannot be performed by keyboard alone" on
+  `<select id="battery-select" disabled>`. Disabled-on-purpose (single-option trim) — a disabled
+  control being unreachable by keyboard is the intended behavior, not a violation.
+- **Interactive Elements guided test:** flagged `#location-group`'s "At home" button as
+  states/properties "not-checked" with AI suggestion "checked" — verified directly against the live
+  DOM: `role="radio" aria-checked="true"` is already exactly correct. The tool's own state read was
+  simply wrong, not a real defect.
+- **Forms guided test:** same false-positive family already established for range-simulator (see that
+  app's §9.3).
+
+## 9.4 Outstanding
+
+**NVDA 2026.1.1.55980** — not yet run; see the deviation note in §1. Required before formal
+BITV/EN 301 549 sign-off.

@@ -322,8 +322,11 @@ input[type="range"]:focus-visible ~ .slider-thumb {
 #soc-track { cursor:pointer; }
 /* SC 2.4.11: the sticky bar is 105-109px and covered up to 14 of 22 tab stops. */
 html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
-/* SC 1.4.11: rgb(110,116,126) at 2.29-2.41:1 was the only boundary of 13 buttons
-   and 2 selects. rgb(110,116,126) measures 3.35:1 on #F6F5F2. */
+/* SC 1.4.11: rgb(110,116,126) (4.32:1 / 3.35:1 on #F6F5F2) is used for both the
+   13 carousel buttons and the 2 selects - clears 3:1 outright. Deliberately
+   darker than the real core component (rgb(161,164,172), 2.29:1, verified by
+   pixel-sampling live production 2026-08-30): this prototype's purpose is to
+   pass every criterion outright, not just replicate the upstream component. */
 .sr-only {
   position:absolute; width:1px; height:1px; margin:-1px; padding:0;
   overflow:hidden; clip:rect(0,0,0,0); clip-path:inset(50%);

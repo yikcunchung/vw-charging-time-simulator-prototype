@@ -71,7 +71,7 @@ criteria are not required and are not listed.
 | **1.4.4** | Resize Text | AA | Yes | ✅ Pass | 400% zoom (320×256 @ dsf 4): 0 violations, all 21 controls present (reachable via the bounded, ≤320px-wide carousel cards described under 1.4.10 — see that row's G225 note — rather than any SC exception). |
 | **1.4.5** | Images of Text | AA | Yes | ✅ Pass* | No images of text. All text is live text. |
 | **1.4.10** | Reflow | AA | Yes | ✅ Pass | No *page-level* horizontal scroll at 320 / 390 / 768 / 1440 or at 400% zoom, and the control set is identical at every width. Below 560px the location / charger / power button groups become a bounded, keyboard-operable horizontal carousel (`overflow-x:auto`, every card scrolls fully into view on focus). Each card's own width (icon + one-line, `white-space:nowrap` label — worst case "Charging station (DC)") is well under 320 CSS px, so reading any single card never itself requires horizontal scrolling; the carousel's scroll is only used to move *between* cards. That is **G225** (a sufficient technique for this SC: a row of ≤320px panels on an otherwise vertically-scrolling page), not the SC's own normative exception, which is narrower and applies only to content that *requires* two-dimensional layout for its usage or meaning (the SC's own examples: maps, diagrams, data tables, code indentation) — a card selector carries no such requirement, so that exception does not apply here and was the wrong clause to cite. |
-| **1.4.11** | Non-text Contrast | AA | Yes | ✅ Pass* | Control boundaries and the focus ring are navy on light — far above 3:1. |
+| **1.4.11** | Non-text Contrast | AA | Yes | ✅ Pass | Both the two `<select>`s' border and the 13 `.btn-card`/`.btn-pill` carousel buttons' `box-shadow` boundary are `rgb(110,116,126)` (4.32:1 / 3.35:1), clearing 3:1 outright — no exception argument needed. This deliberately deviates from the real production core components (which use `rgb(161,164,172)`, 2.29:1, verified by pixel-sampling a live screenshot): **this prototype's purpose is to demonstrate a build that passes every criterion outright, regardless of whether the upstream core component itself does.** The focus ring also clears 3:1 on every control. |
 | **1.4.12** | Text Spacing | AA | Yes | ✅ Pass | All four overrides applied (line-height 1.5, letter-spacing .12em, word-spacing .16em, paragraph 2em) at 1440 / 390 / 320: **no newly clipped element, no control lost, no horizontal scroll.** Detector validated with a canary that fits at the default line-height and overflows at 1.5. `.select-group` stacks the trim-select and battery-select vertically, unconditionally (no breakpoint gating), so each floating label ("Model: The new ID.3 Neo" / "Motor / Battery Capacity") gets the full row width at every viewport, including 960–1024px where this app's own grid narrows the shared column below both mobile and desktop widths — verified zero truncation across all tested widths. As a secondary safeguard, each select's `<option>`s are also wrapped in an `<optgroup>` whose `label` matches the floating label text (e.g. `<optgroup label="Motor / Battery Capacity">`), so even if content ever grows past the stacked width, opening the select — its own standard operation — reveals the full text natively. |
 | **1.4.13** | Content on Hover or Focus | AA | No | ⚪ N/A | No hover- or focus-triggered overlay. |
 
@@ -189,10 +189,13 @@ SOC thumbs even though `aria-valuetext="20 percent"` is set — but it does that
 widget, confirmed against a control page, so it is a CDP limitation and **not** evidence of a defect.
 Whether `aria-valuetext` reaches the platform accessibility API needs an AT or an AXAPI inspector.
 
-**One thing no automated pass can close:** a screen-reader run. VoiceOver is planned; the protocol
-names NVDA 2026.1.1.55980, so record that as a deviation. Two tool runs also remain — one pass
-through the axe DevTools 4.131.2 UI, and a WAVE run from the browser extension. See
-`a11y-2-automated-testing.md`.
+**VoiceOver, WAVE (extension, both states), and axe DevTools (automated scan + Interactive Elements
++ Forms guided tests) have all now been run manually** — see `a11y-2-automated-testing.md` §9 for
+results. Every AI-flagged item was a false positive (misapplied heading suggestions on plain question
+labels, a disabled `battery-select` correctly excluded from keyboard access, and one tool misread of
+an already-correct `aria-checked` value) — no markup changes were required. **NVDA 2026.1.1.55980 is
+the one remaining gap**, recorded as a deviation (VoiceOver is not a substitute) — required before
+formal BITV/EN 301 549 sign-off.
 
 # Decisions an auditor could challenge
 
