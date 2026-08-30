@@ -112,6 +112,10 @@ test.describe('B2 — ARIA state matches reality', () => {
 
   test('an unavailable radio is really disabled — out of the tab order and inert', async ({ page }) => {
     await settle(page);
+    // Trend (the default trim) has only one battery option, which correctly
+    // disables #battery-select (not a real choice) - switch to a trim with real
+    // options so the audited tab-stop count (which includes it) is valid.
+    await page.selectOption('#trim-select', 'Life');
     // The class alone left them focusable and announced as enabled while silently
     // swallowing Enter, which is the worst of both: reachable and useless.
     const before = await page.evaluate(() =>
@@ -141,6 +145,10 @@ test.describe('B2 — ARIA state matches reality', () => {
 test.describe('B3 — focus order and no keyboard trap', () => {
   test(`${TAB_STOPS} tab stops, in visual order, then out of the document and back`, async ({ page }) => {
     await settle(page);
+    // Trend (the default trim) has only one battery option, which correctly
+    // disables #battery-select (not a real choice) - switch to a trim with real
+    // options so the audited tab-stop count (which includes it) is valid.
+    await page.selectOption('#trim-select', 'Life');
     const stops = await tabWalk(page);
     expect(stops.map((s) => s.key)).toHaveLength(TAB_STOPS);
     expect(stops[0].key, 'the skip link must be the first tab stop').toBe('A.skip-link');
@@ -223,6 +231,10 @@ test.describe('B3 — focus order and no keyboard trap', () => {
 test.describe('B4 — focus visible', () => {
   test('every tab stop renders an indicator, and the four custom ones are the audited ring', async ({ page }) => {
     await settle(page);
+    // Trend (the default trim) has only one battery option, which correctly
+    // disables #battery-select (not a real choice) - switch to a trim with real
+    // options so the audited tab-stop count (which includes it) is valid.
+    await page.selectOption('#trim-select', 'Life');
     // Asserted on the COMPUTED value after a REAL Tab press, for two reasons that
     // are each a way this test could have been fake: browsers normalise #293043 to
     // rgb(41, 48, 67), so a stylesheet-text check passes while the ring is broken;
@@ -259,6 +271,10 @@ test.describe('B4 — focus visible', () => {
 test.describe('B5 — focus not obscured', () => {
   test('no focused control is covered by the sticky result bar', async ({ page }) => {
     await settle(page);
+    // Trend (the default trim) has only one battery option, which correctly
+    // disables #battery-select (not a real choice) - switch to a trim with real
+    // options so it's included in this sweep like any other enabled control.
+    await page.selectOption('#trim-select', 'Life');
     const shown = await showStickyBar(page);
     test.skip(!shown, 'no sticky bar at this viewport (>=960px)');
     // Measured AFTER the scroll settles: a synchronous read right after .focus()
@@ -594,6 +610,10 @@ test.describe('A3 — select names are stable', () => {
 
   test('both selects are reachable by real Tab and keep focus through a change', async ({ page }) => {
     await settle(page);
+    // Trend (the default trim) has only one battery option, which correctly
+    // disables #battery-select (not a real choice) - switch to a trim with real
+    // options so the audited tab-stop count (which includes it) is valid.
+    await page.selectOption('#trim-select', 'Life');
     // NOT an arrow-key test. Headless Chromium does not render the native select
     // popup, so page.keyboard.press('ArrowDown') on a focused <select> changes
     // nothing — verified: the value stayed "Trend" through ArrowDown,

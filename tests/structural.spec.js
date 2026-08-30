@@ -465,3 +465,18 @@ test.describe('hygiene', () => {
     expect(bad.orphans).toEqual([]);
   });
 });
+
+test('battery-select disables when its trim has only one option, and re-enables when it has more', async ({ page }) => {
+  await settle(page);
+  // Trend has exactly one battery (no real choice); Life/Style have three.
+  const trendDisabled = await page.evaluate(() => document.getElementById('battery-select').disabled);
+  expect(trendDisabled, 'a single-option select is not a real choice and should be disabled').toBe(true);
+
+  await page.selectOption('#trim-select', 'Life');
+  const lifeDisabled = await page.evaluate(() => document.getElementById('battery-select').disabled);
+  expect(lifeDisabled, 'switching to a trim with real choices must re-enable the select').toBe(false);
+
+  await page.selectOption('#trim-select', 'Trend');
+  const backToTrendDisabled = await page.evaluate(() => document.getElementById('battery-select').disabled);
+  expect(backToTrendDisabled, 'switching back to a single-option trim must re-disable it').toBe(true);
+});

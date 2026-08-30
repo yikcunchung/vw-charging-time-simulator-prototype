@@ -156,6 +156,17 @@ body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -w
 .fl-select:hover select { border-color:rgba(153,127,103,1); color:rgba(115,62,1,1); }
 .fl-select:hover .fl-label { color:rgba(115,62,1,1); }
 .fl-select:hover .fl-chevron svg path { fill:rgba(115,62,1,1); }
+/* A single-option select (nothing to actually choose) is disabled - matches the
+   core Select component's own disabled visual: muted value text, muted border,
+   no pointer interaction, small label stays full navy. Opacity is explicitly
+   reset to 1 because Chromium's UA stylesheet applies opacity:0.7 to disabled
+   form controls by default, dimming an already-correct muted color further. */
+.fl-select select:disabled { cursor:not-allowed; pointer-events:none; border-color:rgb(161,164,172); color:rgb(96,101,116); opacity:1; }
+.fl-select:has(select:disabled) .fl-label { color:rgb(27,34,54); }
+.fl-select:has(select:disabled) .fl-chevron svg path { fill:rgb(96,101,116); }
+.fl-select:has(select:disabled):hover select { border-color:rgb(161,164,172); color:rgb(96,101,116); }
+.fl-select:has(select:disabled):hover .fl-label { color:rgb(27,34,54); }
+.fl-select:has(select:disabled):hover .fl-chevron svg path { fill:rgb(96,101,116); }
 .fl-label { position:absolute; top:6px; left:16px; right:52px; font-family:var(--font-text); font-size:12px; line-height:18px; font-weight:400; color:rgba(0,30,80,1); pointer-events:none; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; transition:color 0.15s; }
 .fl-chevron { position:absolute; right:8px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center; justify-content:center; width:32px; height:32px; z-index:1; }
 .fl-chevron svg path { transition:fill 0.15s; }
@@ -1090,6 +1101,13 @@ const batteryOptions = {
   PoloGTI:   [{ value:'52b', label:'166 kW (226 PS) · 52 kWh' }]
 };
 
+// A select with only one real option offers no actual choice - disable it so
+// it isn't presented as one. Applies to any .fl-select select, not just one
+// specific control, and must be re-checked whenever a select's options change.
+function syncSelectDisabled(sel) {
+  if (sel) sel.disabled = sel.options.length === 1;
+}
+
 function updateBatteryOptions() {
   const trim = document.getElementById('trim-select')?.value ?? 'Trend';
   const sel = document.getElementById('battery-select');
@@ -1099,6 +1117,7 @@ function updateBatteryOptions() {
   sel.innerHTML = '<optgroup label="Motor / Battery Capacity">'
     + opts.map(o => `<option value="${o.value}">${o.label}</option>`).join('') + '</optgroup>';
   if (opts.some(o => o.value === current)) sel.value = current;
+  syncSelectDisabled(sel);
 }
 
 const consumptionData = {
@@ -1123,6 +1142,9 @@ function updateDisclaimer() {
 window.addEventListener('DOMContentLoaded', () => {
   updateSlider('temp-slider','temp-tooltip','temp-thumb');
   updateBatteryOptions();
+  // Defensive/general: any other .fl-select select (currently always
+  // multi-option, but checked the same way in case content ever changes)
+  document.querySelectorAll('.fl-select select').forEach(syncSelectDisabled);
   updateCarImage();
 
   // Below 560px .btn-group becomes a horizontal scroller (overflow-x:auto), so a
