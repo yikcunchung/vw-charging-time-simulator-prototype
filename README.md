@@ -92,7 +92,7 @@ npm install
 npm test
 ```
 
-**197 tests over 4 viewports.** They encode all six rules above plus the scanner checks. Green means you have it.
+**208 tests over 4 viewports.** They encode all six rules above plus the scanner checks. Green means you have it.
 
 > **These six exist because every one of them was invisible to axe, WAVE and Nu.**
 
@@ -108,6 +108,11 @@ You do not need these to build.
 | [`a11y-2-automated-testing.md`](a11y-2-automated-testing.md) | What the tools prove, the test procedure, and the recorded results. |
 | [`a11y-1-criteria.md`](a11y-1-criteria.md) | All 56 WCAG A/AA criteria, one row each. For the auditor — look up, don't read through. |
 
-## One known failure, not yours to fix
+## A deliberate departure from the core component
 
-The `<select>` border is `rgb(161,164,172)` — **2.29:1** against the page where WCAG needs 3:1. Core component value — raise it upstream, never darken locally. (`#8b8e96` passes at 3.01:1.)
+The real core Select/Button border, `rgb(161,164,172)`, is **2.29:1** against the page — below the
+3:1 SC 1.4.11 floor (the carousel buttons share this value). This build uses `rgb(110,116,126)`
+(**4.32:1** for selects, **3.35:1** for buttons) instead: darker than the core value on purpose, so
+the prototype demonstrates full outright compliance rather than reproducing a known upstream
+contrast bug. Do not "correct" it back toward `rgb(161,164,172)` — that direction was tried and
+reverted.
