@@ -1,7 +1,7 @@
 # A11y 1 of 3 — WCAG 2.2 criterion checklist
 
 **App:** VW Charging Time Simulator (`charging-time-simulator`) — a single-page simulator.
-**Audited:** 2026-08-29 against the current build (local; not yet pushed to the live deployment).
+**Audited:** 2026-08-29 against the current build. Local `index.html` and the deployed build are byte-identical.
 **Deployed at:** https://yikcunchung.github.io/vw-charging-time-simulator-prototype/
 **Scope:** the whole page. This app is standalone, so there is no component-versus-page split and
 nothing is out of scope. **PDFs are excluded** — the app ships none; they would be a separate
@@ -205,8 +205,9 @@ test result.
 
 **The strongest claim this evidence supports:**
 
-> *"This app meets WCAG 2.2 A/AA on every automated and runtime check available, pending
-> screen-reader verification."*
+> *"This app meets WCAG 2.2 A/AA on every automated and runtime check available, and has been
+> verified with VoiceOver, WAVE, and axe DevTools. NVDA remains the one screen-reader pass owed
+> before formal BITV/EN 301 549 sign-off."*
 
 That is stronger than a tool-clean claim, and unlike a tool-clean claim it is true — the one real
 defect found here (unnamed graphics, SC 1.1.1) was invisible to axe, WAVE and Nu alike.
