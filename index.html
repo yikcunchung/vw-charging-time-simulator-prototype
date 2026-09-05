@@ -1417,6 +1417,16 @@ window.addEventListener('DOMContentLoaded', () => {
   function renderBody(blocks) {
     body.textContent = '';
     (blocks || []).forEach(function (block) {
+      if (typeof block === 'string') {
+        // Must come before the `block.link` check below: every string has a
+        // truthy `.link` (the legacy String.prototype.link() method), so
+        // without this a plain paragraph block was silently misrouted into
+        // an empty link row instead of rendering as text.
+        var p = document.createElement('p');
+        p.textContent = block;
+        body.appendChild(p);
+        return;
+      }
       if (block && block.list) {
         var ul = document.createElement('ul');
         block.list.forEach(function (item) {
