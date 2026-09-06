@@ -19,13 +19,10 @@ styled-components.
 **not one tool in the required toolchain saw them.** axe reported 0 violations at 98 rules. WAVE
 reported 0 errors. Nu reported 0 errors. The accessibility tree was the only thing that caught it.
 
-Chrome maps a bare `<svg>` to `role=image`, `name=""`, `ignored=false` — it is **not** decorative by
-default. `svg-img-alt` and `role-img-alt` are both **inapplicable** to an `<svg>` with no `role`
-attribute, and `image-alt` only inspects `<img>`, so the whole class is invisible to scanners.
-
-Fixed with `aria-hidden="true"`. **SC 1.1.1 is the rule; the accessibility-tree assertion in the
-Definition of Done is the check that keeps it fixed.** The pattern was already understood in this
-codebase — every `.q-icon` SVG carried `aria-hidden="true"` already. These 7 were simply missed.
+Chrome exposes a bare `<svg>` as `role=image, name=""` — invisible to scanners (see SC 1.1.1 below
+for why). Fixed with `aria-hidden="true"`; **SC 1.1.1 is the rule, the accessibility-tree assertion
+in the Definition of Done is the check that keeps it fixed.** Every `.q-icon` SVG already carried
+`aria-hidden="true"` — these 7 were simply missed.
 
 ---
 # 1. Semantics and naming
@@ -322,28 +319,22 @@ Control boundaries, focus rings and selected-state indicators.
 **400% zoom is `setDeviceMetricsOverride{ width:320, height:256, deviceScaleFactor:4 }`.**
 `dsf 1` is a small screen — a different test.
 
-Content may scroll in **one** direction only. A horizontal carousel is **not** an instance of the
-SC's normative exception — that exception is narrower and covers only content which *requires*
-two-dimensional layout for its usage or meaning (the SC's own examples: maps, diagrams, data
-tables, code indentation). A card selector has no such requirement, so citing "the exception" for
-it is the wrong clause. The real route to compliance is **G225** (sufficient technique): keep each
-carousel card under 320 CSS px wide, so reading any single card never itself needs horizontal
-scroll — the carousel's own scroll is only used to move between cards. Page-level horizontal
-scroll is not permitted under either route.
+Content may scroll in **one** direction only. A horizontal carousel is **not** the SC's normative
+exception (narrower — covers only content that *requires* 2D layout: maps, diagrams, data tables,
+code indentation); citing it for a card selector is the wrong clause. The real route is **G225**:
+keep each card under 320 CSS px wide, so only movement *between* cards scrolls. Page-level
+horizontal scroll is never permitted.
 
 Sufficient techniques: **G225** (bounded ≤320px carousel panels), **C31** (flexbox), **C32** (media
 queries + grid), **C34** (un-fix sticky).
 
-> **A bounded carousel (`overflow-x:auto`) clips its own children's outward-drawn focus rings at
-> its edge, unless you give it room.** Any content painted outside an element's box — an
-> `outline` at the default `outline-offset:0`, same as a `box-shadow` — gets clipped by an
-> ancestor's `overflow` the same way `overflow:hidden` would clip it, including the container's
-> own scroll edge. Give the carousel `padding` equal to the ring width, and match it with
-> `scroll-padding-inline` so `scrollIntoView()` respects the same margin — otherwise a card
-> scrolled flush to the edge still has its ring clipped even though the card itself is fully
-> visible. Also add a `focusin` handler that calls `scrollIntoView({block:'nearest',
-> inline:'nearest'})` on the focused child — native browsers do not reliably auto-scroll a
-> focused element inside a nested `overflow-x:auto` container on `Tab` alone.
+> **A bounded carousel (`overflow-x:auto`) clips outward-drawn focus rings at its edge unless given
+> room.** An `outline` at `outline-offset:0` (like a `box-shadow`) gets clipped by an ancestor's
+> `overflow`, including the container's own scroll edge. Give the carousel `padding` equal to the
+> ring width, matched by `scroll-padding-inline` so `scrollIntoView()` respects the same margin —
+> otherwise a card scrolled flush to the edge has a clipped ring despite being fully visible. Also
+> add a `focusin` handler calling `scrollIntoView({block:'nearest', inline:'nearest'})`: browsers
+> don't reliably auto-scroll a focused child inside nested `overflow-x:auto` on `Tab` alone.
 
 ---
 
@@ -362,16 +353,13 @@ Nothing may newly clip, no control may be lost, no horizontal scroll may appear.
 > override `line-height`, so a 24px target built on line-height collapses under the very override
 > you are being tested against. Padding is unaffected.
 
-> **Fix the width first, not just the recovery path.** A `<select>`'s floating label (e.g. "Motor /
-> Battery Capacity", or a value like "The new ID.3 Neo") can run out of room under these overrides
-> if two selects are forced to share a row. `.select-group` stacks them vertically, unconditionally
-> (no breakpoint gating — this page's own grid makes available width non-monotonic across
-> viewports, so no single breakpoint threshold holds), which gives each label the full row width
-> everywhere and eliminates the truncation outright — verified zero clipping at every tested width.
+> **Fix the width first, not just the recovery path.** A `<select>`'s floating label can run out of
+> room under these overrides if two selects share a row. `.select-group` stacks them vertically,
+> unconditionally (this page's grid makes available width non-monotonic, so no single breakpoint
+> holds) — full row width everywhere, zero truncation verified.
 >
-> As a secondary, belt-and-suspenders safeguard (for if content ever grows past the stacked width),
-> wrap that select's `<option>`s in an `<optgroup label="…">` carrying the identical text, so opening
-> the select (its own normal operation) reveals it in full:
+> **Secondary, belt-and-suspenders safeguard:** wrap that select's `<option>`s in a matching
+> `<optgroup label="…">` so opening the select (its own normal operation) reveals the label in full:
 > ```html
 > <select aria-labelledby="battery-fl-label">
 >   <optgroup label="Motor / Battery Capacity">
@@ -379,10 +367,9 @@ Nothing may newly clip, no control may be lost, no horizontal scroll may appear.
 >   </optgroup>
 > </select>
 > ```
-> Do this in **every** place that rebuilds the select's `innerHTML` (a trim-change handler, etc.) —
-> a static markup fix alone will be silently undone the moment the options are rebuilt in JS. Treat
-> the optgroup as a safety net, not the primary fix: a label with no matching optgroup, and no
-> layout fix either, has no escape — it must actually fit, or the criterion is a real failure.
+> Apply this in **every** place that rebuilds the select's `innerHTML` — a static fix alone gets
+> undone the moment options are rebuilt in JS. The optgroup is a safety net, not the primary fix: a
+> label with no matching optgroup and no layout fix has no escape — it must actually fit.
 
 ---
 
