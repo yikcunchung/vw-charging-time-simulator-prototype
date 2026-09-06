@@ -254,17 +254,22 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
 .tech-link-stroke { height:1px; background:var(--navy-dark); }
 
 /* Reference badge — small numbered footnote marker, dark theme (used on the navy result card).
-   24x24 wrapper matches the adjacent 24px info-icon hit target; visible circle is 16x16. */
-.ref-badge-wrapper { width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
+   The wrapper IS the interactive element (24x24, matching the adjacent 24px
+   info-icon hit target) so the whole box is clickable/focusable, not just the
+   16x16 visible circle inside it. */
+.ref-badge-wrapper {
+  width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
+  cursor:pointer; text-decoration:none;
+}
+.ref-badge-wrapper:hover .ref-badge, .ref-badge-wrapper:active .ref-badge { background:#997F67; }
+.ref-badge-wrapper:focus-visible { outline:2px solid var(--focus-orange); outline-offset:2px; }
 .ref-badge {
   width:16px; height:16px; border-radius:100px;
   background:var(--border-light); border:none;
   color:var(--navy); font-family:var(--font-text); font-size:12px; font-weight:400;
   display:inline-flex; align-items:center; justify-content:center;
-  padding:0; cursor:pointer; text-decoration:none; line-height:1;
+  padding:0; line-height:1;
 }
-.ref-badge:hover, .ref-badge:active { background:#997F67; }
-.ref-badge:focus-visible { outline:2px solid var(--focus-orange); outline-offset:2px; }
 
 /* FAQ Accordion */
 .faq-section { margin-top:8vw; display:flex; flex-direction:column; gap:28px; }
@@ -736,7 +741,7 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
             <div class="result-header">
               <div class="result-headline-row">
                 <span class="result-headline-label">Estimated charging time</span>
-                <span class="ref-badge-wrapper"><a href="#disclaimer" class="ref-badge" aria-label="See disclaimer 1">1</a></span>
+                <a href="#disclaimer" class="ref-badge-wrapper" aria-label="See disclaimer 1"><span class="ref-badge" aria-hidden="true">1</span></a>
                 <button class="q-icon-btn" id="info-btn-time" aria-label="More information: Estimated charging time"><svg class="q-icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button>
               </div>
               <div class="time-display" id="time-display" aria-hidden="true">–:– h</div>
@@ -1596,7 +1601,7 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 </script>
 <script>
-  document.querySelectorAll('a.ref-badge[href^="#"]').forEach(function(badge) {
+  document.querySelectorAll('a.ref-badge-wrapper[href^="#"]').forEach(function(badge) {
     badge.addEventListener('click', function(e) {
       e.preventDefault();
       var target = document.getElementById(this.getAttribute('href').slice(1));
