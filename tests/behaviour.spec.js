@@ -17,6 +17,7 @@ const {
 } = require('./settle');
 
 const AUDITED_RING = '2px/solid/rgb(200, 108, 3)';
+const AUDITED_RING_SELECT = '3px/solid/rgb(200, 108, 3)';
 
 /** aria-valuenow / aria-valuetext / activeElement, read together. */
 const socState = (page) => page.evaluate(() => ({
@@ -247,7 +248,10 @@ test.describe('B4 — focus visible', () => {
     // styled on the sibling .slider-thumb via `:focus-visible ~`. Measuring the
     // input itself would report a healthy ring over an invisible control.
     const viaSibling = new Set(['temp-slider']);
-    const audited = new Set(['soc-thumb-from', 'soc-thumb-to', 'trim-select', 'battery-select']);
+    // .fl-select select was raised from 2px to 3px; the SOC range thumbs were
+    // outside that change's scope and stayed at 2px.
+    const audited = new Set(['soc-thumb-from', 'soc-thumb-to']);
+    const auditedSelect = new Set(['trim-select', 'battery-select']);
 
     for (const s of stops) {
       if (viaSibling.has(s.key)) {
@@ -261,6 +265,9 @@ test.describe('B4 — focus visible', () => {
       expect(parseFloat(w), `${s.key} outline width`).toBeGreaterThanOrEqual(1);
       if (audited.has(s.key)) {
         expect(s.outline, `${s.key} must draw the audited ring`).toBe(AUDITED_RING);
+      }
+      if (auditedSelect.has(s.key)) {
+        expect(s.outline, `${s.key} must draw the audited select ring`).toBe(AUDITED_RING_SELECT);
       }
     }
   });

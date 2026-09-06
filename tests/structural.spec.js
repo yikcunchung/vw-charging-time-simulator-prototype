@@ -342,10 +342,11 @@ test.describe('reflow — SC 1.4.10 / 1.4.4', () => {
     const controls = await page.evaluate(() =>
       [...document.querySelectorAll('#content button, #content select, #content input, #content [role="slider"]')]
         .map((el) => (el.getAttribute('aria-label') || el.textContent || el.id).replace(/\s+/g, ' ').trim()));
-    // 25 = 5 info buttons + 14 radios + 2 SOC thumbs + 1 range input + 2 selects
-    // + the CTA. That is the 21 tab stops, minus the skip link (an <a>, outside
-    // this selector), plus the 5 radios the default state disables.
-    expect(controls).toHaveLength(25);
+    // 30 = 5 info buttons + 14 radios + 2 SOC thumbs + 1 range input + 2 selects
+    // + tech-link-btn + the CTA + 4 FAQ questions. That is the 27 tab stops,
+    // minus the skip link and ref-badge-wrapper (both <a>, outside this
+    // selector), plus the 5 radios the default state disables.
+    expect(controls).toHaveLength(30);
     // The a11y-3 doc's own D3 exception: "a horizontal carousel inside a bounded,
     // keyboard-operable region is the permitted two-dimensional exception." Below
     // 560px .btn-group IS that carousel (overflow-x:auto, and every card scrolls

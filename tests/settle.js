@@ -38,7 +38,7 @@ const CHECKED_TOTAL = 3;
 // Tab stops in the default state, identical at 1440x900, 768x1024, 390x844 and
 // 320x256@dsf4: skip link, 5 info buttons, 4 location, 2 enabled chargers,
 // 2 enabled powers, 2 SOC thumbs, temp slider, 2 selects, CTA.
-const TAB_STOPS = 21;
+const TAB_STOPS = 27;
 // From index.html. Enforced identically on the keyboard, drag and track-click paths.
 const MIN_SOC_GAP = 24;
 // The nine rules axe-core ships with `enabled: false`. target-size is SC 2.5.8:
