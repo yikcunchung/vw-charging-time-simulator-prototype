@@ -9,10 +9,9 @@
 The single most important sentence in this pack:
 
 > **A clean automated run is necessary and nowhere near sufficient.** This app scores 0 axe
-> violations, 0 WAVE errors and 0 HTML validity errors — and that result could not see the
-> unnamed-graphic defect that the accessibility tree found, cannot test SC 2.5.3, cannot judge
-> whether a name is *correct* rather than merely present, and cannot tell you what a screen reader
-> actually says.
+> violations, 0 WAVE errors, 0 HTML validity errors — none of which caught the unnamed-graphic
+> defect the accessibility tree found, can test SC 2.5.3, judge whether a name is *correct* not
+> merely present, or say what a screen reader actually announces.
 
 ---
 
@@ -39,7 +38,7 @@ The local `index.html` and the deployed build are **byte-identical**.
 
 | Required | Status | Note |
 |---|---|---|
-| **axe DevTools 4.12.1** | ✅ **Done — UI at WCAG 2.2 AA** | Automated scan (default + info-modal-open states), Interactive Elements, and Forms guided tests all run — every AI-flagged item was a false positive (two heading-markup suggestions on plain question labels, a disabled `battery-select` flagged as a keyboard-access failure when disabled-on-purpose is the whole point, and an already-correct `aria-checked="true"` misread as "not-checked") — §9.3. This audit's CDP run used **axe-core 4.13.0**, the library version embedded then; the two agree on substance |
+| **axe DevTools 4.12.1** | ✅ **Done — UI at WCAG 2.2 AA** | Automated scan (default + info-modal-open) + Interactive Elements + Forms guided tests, all run — every AI flag was a false positive (2 heading-markup suggestions on plain labels, disabled `battery-select` flagged as keyboard-inaccessible when disabled-on-purpose, one correct `aria-checked="true"` misread as unchecked) — §9.3. CDP run used **axe-core 4.13.0**; results agree |
 | **WAVE Evaluation Tool 3.3.1.0** | ✅ **Done — hosted and extension, both states** | Hosted engine via `wave.webaim.org/report#/<url>`; extension pass confirmed **0 errors, 0 contrast errors** in both the default state and the info-modal-open state — §9.2 |
 | **Zoom 400% and 320 × 256 px** | ✅ **Done** | `320×256 @ deviceScaleFactor 4`. **dsf 1 is a small screen, not a zoomed one** |
 | **Operated via the keyboard** | ✅ **Done** | Driven with real `Input.dispatchKeyEvent` |
@@ -48,10 +47,10 @@ The local `index.html` and the deployed build are **byte-identical**.
 
 ### NVDA vs VoiceOver — a deviation to record
 
-VoiceOver is planned instead of NVDA — record as a **deviation**, not a substitution. They disagree
-exactly where this app is interesting: `<select>` naming via `aria-labelledby`, live-region
-politeness, hidden-`<input>`-behind-styled-`<label>` controls; browsers differ too (NVDA:
-Firefox/Chrome, VoiceOver: Safari). Budget an NVDA pass before formal sign-off.
+VoiceOver ran instead of NVDA — recorded as a **deviation**, not a substitution. They disagree where
+this app is interesting: `<select>` naming via `aria-labelledby`, live-region politeness, hidden-
+`<input>`-behind-styled-`<label>` controls; browsers differ too (NVDA: Firefox/Chrome, VoiceOver:
+Safari). Budget an NVDA pass before formal sign-off.
 
 ---
 
@@ -87,25 +86,23 @@ Viewports: 1440×900, 768×1024, 390×844, 320×640, and 320×256 @ dsf 4 (liter
 |---|---|---|---|---|---|
 | **0** | **0** | 0 | 12 | 3 | 44 |
 
-The run was confirmed to have analysed the real page — control count and document title were read
-back out of WAVE's iframe, not assumed.
+Confirmed the run analysed the real page: control count and document title read back from WAVE's
+iframe, not assumed.
 
 ## Nu HTML validator — 0 errors
 
-SC 4.1.1 Parsing. Obsolete in WCAG 2.2 but normative under EN 301 549 (clause 9.4.1.1), so it is
-checked and kept.
+SC 4.1.1 Parsing — obsolete in WCAG 2.2 but normative under EN 301 549 (clause 9.4.1.1); checked
+and kept.
 
 ## Contrast — the `incomplete` bucket resolved by hand
 
-axe punts whenever the background is a gradient, an image, or overlapped. Those are **not passes** —
-a BITV tester must resolve every one. At 1440×900 there were **18**.
+axe punts whenever the background is a gradient, an image, or overlapped — **not passes**; a BITV
+tester must resolve every one. At 1440×900 there were **18** (16 gradient, 2 overlap); axe declined
+to compute a ratio in every case.
 
-16 of the 18 are "background could not be determined due to a background gradient"; the other 2 are overlap. axe declined to compute a ratio in every case.
-
-**Every one resolves to a pass — worst ratio 14.50:1** against 4.5:1 (every element ≤16px, so the
-3:1 large-text threshold never applies). Measured on composited pixels: viewport screenshot cropped
-in PIL, foreground from the glyph band, background from a second capture with text forced
-transparent.
+**Every one resolves to a pass — worst ratio 14.50:1** vs 4.5:1 required (all ≤16px, so the 3:1
+large-text threshold never applies). Measured on composited pixels: viewport screenshot cropped in
+PIL, foreground from glyph band, background from a second capture with text forced transparent.
 
 ## Orientation and text spacing
 
@@ -115,9 +112,9 @@ transparent.
 `letter-spacing:0.12em`, `word-spacing:0.16em`, `p margin-bottom:2em`) at 1440 / 390 / 320:
 **no newly clipped element, no control lost, no horizontal scroll.**
 
-> **One nuance.** trim-select/battery-select floating labels still visually truncate at some widths
-> under these overrides — not counted as loss: each `<option>` sits in a matching `<optgroup>`
-> `label`, so opening the select (its own normal operation) reveals the full text.
+> **One nuance.** trim-select/battery-select floating labels visually truncate at some widths under
+> these overrides — not counted as loss: each `<option>` sits in a matching `<optgroup>` label, so
+> opening the select reveals the full text.
 
 > **Detector validated** — a canary fitting at the default line-height and overflowing only at 1.5
 > was injected and *was* detected (an already-clipped canary proves nothing).
@@ -138,9 +135,9 @@ Every axe detector was re-run against the page with that defect injected:
 | `<a href>` with no text | `link-name` | ✅ |
 | Two adjacent 12×12 buttons | `target-size` | ✅ |
 
-**`target-size` first appeared to miss, and that was the harness's fault.** The canaries had been
-injected at `position:fixed; top:0; left:0` — underneath the sticky topbar, so axe treated them as
-obscured — and only `violations` was read. In normal flow the rule fires on both nodes. Traps 1 and 2.
+**`target-size` first appeared to miss — the harness's fault.** Canaries were injected at
+`position:fixed; top:0; left:0`, under the sticky topbar, so axe treated them as obscured, and only
+`violations` was read. In normal flow the rule fires on both nodes. Traps 1 and 2.
 
 ---
 
@@ -210,9 +207,8 @@ labelled "button". Names must be read against what they describe.
 remains outstanding** — §1.
 
 **The reusable procedure (Step 0, VoiceOver/WAVE/axe DevTools runs, sign-off checklist) lives
-centrally** in `../audit-evidence/manual-testing-guide.md` — it's identical across all five sibling
-apps, so it's maintained once there instead of copied per app. What follows here is only what's
-specific to charging-time-simulator.
+centrally** in `../audit-evidence/manual-testing-guide.md` — identical across all five sibling apps,
+maintained once instead of copied per app. What follows is specific to charging-time-simulator only.
 
 ## App-specific Step 0
 
@@ -241,9 +237,8 @@ Tick only what you actually observed against the central sign-off checklist in
 # 8. Re-running the automated suite
 
 Identical across all five sibling apps — see `../audit-evidence/manual-testing-guide.md` for the
-CDP re-run script (serve locally, drive headless Chrome over the CDP protocol, run axe/AX-tree/
-reflow/text-spacing/WAVE checks, diff local against live). Substitute this app's own port (`7810`)
-and live URL where the script needs them.
+CDP re-run script (serve locally, drive headless Chrome over CDP, run axe/AX-tree/reflow/
+text-spacing/WAVE checks, diff local against live). Substitute this app's port (`7810`) and live URL.
 
 **Automate the structural half in CI, but do not mistake it for the whole.** A structural-only suite
 is exactly what scores clean on a build with a Level A naming failure.
@@ -254,15 +249,16 @@ is exactly what scores clean on a build with a Level A naming failure.
 
 ## 9.1 Screen reader — VoiceOver / Safari, complete
 
-**Complete, no defects.** Full Tab-order walk (26 real stops, skip link through the CTA button);
-all three carousel radiogroups (location/charger/power — correct `role="radio"`/`aria-checked`,
-native "N of M" position info, silent on unchecked, consistent across all three); the SOC dual slider
-(two distinct correctly-named thumbs); the temperature slider; trim-select (a Safari-vs-Chrome native
-`<select>` phrasing difference checked against real production — normal cross-browser AT behavior,
-not a defect); the CTA button; all 6 info-modals (open/read/close via all three methods, focus
-returns to the trigger, multi-paragraph bodies read via the same `renderBody()` pattern as
-range-simulator). Rotor: Form Controls and Landmarks (banner + main) correct; Headings shows only 1
-(`<h1>`) — correct, since the on-page "questions" are styled `<span>`s, not real headings.
+**Complete, no defects.** Verified:
+- Tab-order walk — 26 real stops, skip link through the CTA button.
+- Three carousel radiogroups (location/charger/power) — correct `role="radio"`/`aria-checked`,
+  native "N of M" position, silent on unchecked, consistent across all three.
+- SOC dual slider (2 correctly-named thumbs), temp slider, trim-select (Safari-vs-Chrome phrasing
+  difference vs production — normal cross-browser AT behavior, not a defect), CTA button.
+- All 6 info-modals — open/read/close via all 3 methods, focus returns to trigger, bodies read via
+  the same `renderBody()` pattern as range-simulator.
+- Rotor: Form Controls/Landmarks (banner + main) correct; Headings shows only `<h1>` — correct, the
+  on-page "questions" are styled `<span>`s, not real headings.
 
 ## 9.2 WAVE 3.3.1.0 — extension, complete
 
@@ -274,8 +270,8 @@ state and the info-modal-open state.
 All run against the live build. Findings, all false positives:
 - **Automated scan (default state):** 2× "Headings must use heading markup" on `#q-power`/`#q-charger`
   — non-deterministic AI suggestion (73-82% confidence) to turn plain `<span>` labels into headings.
-  Inconsistent with itself (only 2 of 6 identical labels flagged) and contradicts the VoiceOver rotor
-  sweep (§9.1) confirming single-heading structure is correct here.
+  Inconsistent with itself (2 of 6 identical labels flagged); contradicts the VoiceOver rotor sweep
+  (§9.1) confirming single-heading structure is correct.
 - **Automated scan (info-modal-open state):** 1× "Function cannot be performed by keyboard alone" on
   `<select id="battery-select" disabled>`. Disabled-on-purpose (single-option trim) — a disabled
   control being unreachable by keyboard is the intended behavior, not a violation.

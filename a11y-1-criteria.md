@@ -3,9 +3,8 @@
 **App:** VW Charging Time Simulator (`charging-time-simulator`) — a single-page simulator.
 **Audited:** 2026-08-29 against the current build. Local `index.html` and the deployed build are byte-identical.
 **Deployed at:** https://yikcunchung.github.io/vw-charging-time-simulator-prototype/
-**Scope:** the whole page. This app is standalone, so there is no component-versus-page split and
-nothing is out of scope. **PDFs are excluded** — the app ships none; they would be a separate
-conformance surface under EN 301 549 clause 10, checked with PAC.
+**Scope:** the whole page — standalone app, no component/page split, nothing out of scope.
+**PDFs excluded** (ships none); would be a separate EN 301 549 clause 10 surface, checked with PAC.
 **Companion documents:** `a11y-2-automated-testing.md` (what the tools can and cannot prove) ·
 `a11y-3-implementation.md` (what to build).
 
@@ -13,10 +12,9 @@ The conformance target is **Level A + AA** — what EN 301 549 clause 9 requires
 BFSG / the European Accessibility Act. That is **56 criteria** (32 A + 24 AA). The 31 Level AAA
 criteria are not required and are not listed.
 
-> **If EN 301 549 becomes the formal target**, note that V3.2.1 (2021-03) references **WCAG 2.1**,
-> not 2.2. The only practical delta is **4.1.1 Parsing** — obsolete in 2.2 but normative in 2.1 and
-> listed by EN as clause 9.4.1.1. It is satisfied here and kept in the table rather than dropped, so
-> the EN path is not silently broken.
+> **If EN 301 549 becomes the formal target:** V3.2.1 (2021-03) references **WCAG 2.1**, not 2.2.
+> Only practical delta: **4.1.1 Parsing** — obsolete in 2.2, normative in 2.1 (EN clause 9.4.1.1).
+> Satisfied here and kept in the table so the EN path isn't silently broken.
 
 | Status | Meaning |
 |---|---|
@@ -36,7 +34,7 @@ criteria are not required and are not listed.
 
 | SC | Name | Lvl | Relevant | Status | Evidence / what to do |
 |---|---|---|---|---|---|
-| **1.1.1** | Non-text Content | A | Yes | ✅ Pass | **0 unnamed nodes in the accessibility tree**, all 5 viewports. 7 decorative `<svg>`s got `aria-hidden="true"`; the car render has `alt="Volkswagen ID.3 Neo"`. **No tool caught this** — axe, WAVE, Nu all clean. |
+| **1.1.1** | Non-text Content | A | Yes | ✅ Pass | **0 unnamed nodes**, all 5 viewports. 7 decorative `<svg>`s: `aria-hidden="true"`; car render: `alt="Volkswagen ID.3 Neo"`. **No tool caught this** — axe, WAVE, Nu all clean. |
 
 
 ## 1.2 Time-based Media
@@ -54,7 +52,7 @@ criteria are not required and are not listed.
 
 | SC | Name | Lvl | Relevant | Status | Evidence / what to do |
 |---|---|---|---|---|---|
-| **1.3.1** | Info and Relationships | A | Yes | ✅ Pass | One `h1`, `role="banner"` topbar, `main`, two named `<select>`s, card and pill button groups, and a two-thumb ARIA slider. axe 0 violations on structure rules at 98 rules. |
+| **1.3.1** | Info and Relationships | A | Yes | ✅ Pass | One `h1`, `role="banner"` topbar, `main`, two named `<select>`s, card/pill button groups, a two-thumb ARIA slider. axe: 0 violations on structure rules (98 rules). |
 | **1.3.2** | Meaningful Sequence | A | Yes | ✅ Pass* | DOM order matches visual order across all 27 Tab stops. |
 | **1.3.3** | Sensory Characteristics | A | Yes | ✅ Pass* | No instruction relies on shape, size or position. |
 | **1.3.4** | Orientation | AA | Yes | ✅ Pass | No `@media (orientation:)` rule exists anywhere. Nothing locks orientation. |
@@ -67,12 +65,12 @@ criteria are not required and are not listed.
 |---|---|---|---|---|---|
 | **1.4.1** | Use of Color | A | Yes | ✅ Pass* | Colour is never the only channel — selected cards and pills carry their state in the accessibility tree, not just in their fill. |
 | **1.4.2** | Audio Control | A | No | ⚪ N/A | No audio. `audio[autoplay]` / `video[autoplay]` count is 0. |
-| **1.4.3** | Contrast (Minimum) | AA | Yes | ✅ Pass | **All 18 `color-contrast` incomplete nodes resolved by hand on composited pixels — worst 14.50:1**, against 4.5:1. axe went incomplete because of a subtle full-height page gradient, not because anything was close. |
-| **1.4.4** | Resize Text | AA | Yes | ✅ Pass | 400% zoom (320×256 @ dsf 4): 0 violations, all 30 controls present (reachable via the bounded, ≤320px-wide carousel cards described under 1.4.10 — see that row's G225 note — rather than any SC exception). |
+| **1.4.3** | Contrast (Minimum) | AA | Yes | ✅ Pass | **All 18 `color-contrast` incomplete nodes resolved by hand — worst 14.50:1** vs 4.5:1 required. axe flagged incomplete due to a full-height page gradient, not proximity to threshold. |
+| **1.4.4** | Resize Text | AA | Yes | ✅ Pass | 400% zoom (320×256 @ dsf 4): 0 violations, all 30 controls present via the bounded ≤320px carousel cards (1.4.10's G225 note), not an SC exception. |
 | **1.4.5** | Images of Text | AA | Yes | ✅ Pass* | No images of text. All text is live text. |
-| **1.4.10** | Reflow | AA | Yes | ✅ Pass | No *page-level* horizontal scroll at 320/390/768/1440 or 400% zoom; control set identical at every width. Below 560px, location/charger/power groups become a bounded, keyboard-operable carousel (`overflow-x:auto`) of ≤320px cards — **G225**, not the SC's narrower two-dimensional exception (maps/diagrams/tables). |
-| **1.4.11** | Non-text Contrast | AA | Yes | ✅ Pass | `<select>` borders and the 13 `.btn-card`/`.btn-pill` `box-shadow` boundaries: `rgb(110,116,126)`, 4.32:1/3.35:1, clearing 3:1. Deliberate deviation from production core (`rgb(161,164,172)`, 2.29:1): **this prototype passes outright regardless of the upstream component.** Focus ring also clears 3:1. |
-| **1.4.12** | Text Spacing | AA | Yes | ✅ Pass | **No newly clipped element, no control lost, no horizontal scroll** — all four overrides (line-height 1.5, letter-spacing .12em, word-spacing .16em, paragraph 2em) at 1440/390/320, canary-validated. `.select-group` stacks trim-select/battery-select vertically, so floating labels get full width incl. 960–1024px; each `<option>` sits in a matching `<optgroup>` as backup. |
+| **1.4.10** | Reflow | AA | Yes | ✅ Pass | No *page-level* horizontal scroll at any viewport or 400% zoom; control set identical throughout. Below 560px, location/charger/power groups become a bounded, keyboard-operable `overflow-x:auto` carousel of ≤320px cards — **G225**, not the SC's narrower two-dimensional exception (maps/tables). |
+| **1.4.11** | Non-text Contrast | AA | Yes | ✅ Pass | `<select>` borders + 13 `.btn-card`/`.btn-pill` `box-shadow`: `rgb(110,116,126)`, 4.32:1/3.35:1, clears 3:1. Deliberate deviation from core's failing `rgb(161,164,172)` (2.29:1) — **prototype passes outright regardless of the upstream component.** Focus ring also clears 3:1. |
+| **1.4.12** | Text Spacing | AA | Yes | ✅ Pass | **No newly clipped element, no control lost, no horizontal scroll** across all four overrides (line-height 1.5, letter-spacing .12em, word-spacing .16em, paragraph 2em) at 1440/390/320, canary-validated. `.select-group` stacks the two selects vertically for full-width floating labels (incl. 960–1024px); each `<option>` also sits in a matching `<optgroup>` as backup. |
 | **1.4.13** | Content on Hover or Focus | AA | No | ⚪ N/A | No hover- or focus-triggered overlay. |
 
 
@@ -83,7 +81,7 @@ criteria are not required and are not listed.
 
 | SC | Name | Lvl | Relevant | Status | Evidence / what to do |
 |---|---|---|---|---|---|
-| **2.1.1** | Keyboard | A | Yes | ✅ Pass | All 27 controls keyboard-operable. SOC thumbs driven with real keys — ArrowRight/Left ±1, ArrowUp/Down ±1, PageUp/PageDown ±10, Home/End — each clamped against the 24-point minimum gap, `aria-valuenow` tracking every step. |
+| **2.1.1** | Keyboard | A | Yes | ✅ Pass | All 27 controls keyboard-operable. SOC thumbs: ArrowRight/Left ±1, ArrowUp/Down ±1, PageUp/PageDown ±10, Home/End — clamped against the 24-point minimum gap, `aria-valuenow` tracking every step. |
 | **2.1.2** | No Keyboard Trap | A | Yes | ✅ Pass | No trap — Tab cycles all 27 stops and returns to the first. Both slider thumbs are separate Tab stops. |
 | **2.1.4** | Character Key Shortcuts | A | No | ⚪ N/A | No single-character key shortcuts are registered. |
 
@@ -113,7 +111,7 @@ criteria are not required and are not listed.
 | **2.4.4** | Link Purpose (In Context) | A | No | ⚪ N/A | No links other than the skip link, which is named. |
 | **2.4.5** | Multiple Ways | AA | No | ⚪ N/A | A standalone single page. SC 2.4.5 applies to a *set* of web pages; there is no set. |
 | **2.4.6** | Headings and Labels | AA | Yes | ✅ Pass | One `h1`, no skipped levels. Each question label describes its control group. |
-| **2.4.7** | Focus Visible | AA | Yes | ✅ Pass | Every one of the 27 stops shows a visible focus indicator, drawing `rgb(200,108,3)` (`--focus-orange`): info buttons, cards/pills, tech-link, the CTA and both `<select>`s at a bolder 3px, the SOC thumbs, slider thumb, skip link and FAQ questions at 2px. |
+| **2.4.7** | Focus Visible | AA | Yes | ✅ Pass | All 27 stops show a visible indicator in `rgb(200,108,3)` (`--focus-orange`): info buttons, cards/pills, tech-link, CTA and both `<select>`s at 3px; SOC thumbs, slider thumb, skip link and FAQ questions at 2px. |
 | **2.4.11** | Focus Not Obscured (Minimum) | AA | Yes | ✅ Pass | No fixed or sticky element overlaps a focused control; all measured inside the viewport after settling. |
 
 
@@ -171,29 +169,28 @@ criteria are not required and are not listed.
 | SC | Name | Lvl | Relevant | Status | Evidence / what to do |
 |---|---|---|---|---|---|
 | **4.1.1** | Parsing | A | Yes | ✅ Pass | Nu HTML validator: **0 errors**. Obsolete in WCAG 2.2 but normative under EN 301 549 clause 9.4.1.1, so it is checked and kept. |
-| **4.1.2** | Name, Role, Value | A | Yes | ✅ Pass | **AX tree: 236 nodes, 0 unnamed, 0 duplicate role+name** (`Trend/Life/Style ×2` = one `<select>` across two `<optgroup>`s). SOC thumbs: `role="slider"`, unique name, `aria-valuenow`/`min`/`max` from all 3 update paths (keyboard/drag/track click). `#trim-select` name: "…Model: The new ID.3 Neo" — only the trailing value changes. |
-| **4.1.3** | Status Messages | AA | Yes | ✅ Pass | `#time-live` (`aria-live="polite"`, in the DOM at load, 1×1 clipped with an explicit white `color`) announces every recomputation — driven through 4 distinct announcements, e.g. "Charging time 2 hours 50 minutes" → "2 hours 11 minutes" → "0 hours 40 minutes". |
+| **4.1.2** | Name, Role, Value | A | Yes | ✅ Pass | **AX tree: 236 nodes, 0 unnamed, 0 duplicate role+name** (`Trend/Life/Style ×2` = one `<select>`, two `<optgroup>`s). SOC thumbs: `role="slider"`, unique name, `aria-valuenow`/min/max from all 3 update paths (keyboard/drag/track click). `#trim-select` name: "…Model: The new ID.3 Neo" — only the trailing value changes. |
+| **4.1.3** | Status Messages | AA | Yes | ✅ Pass | `#time-live` (`aria-live="polite"`, in DOM at load, 1×1 clipped, explicit white `color`) announces every recomputation — e.g. "Charging time 2 hours 50 minutes" → "2 hours 11 minutes" → "0 hours 40 minutes". |
 
 ---
 
 # What is actually left to do
 
-**No open criteria and no known failures.** Every Level A/AA criterion is verified, inspected, or
-not applicable.
+**No open criteria, no known failures** — every A/AA criterion verified, inspected, or N/A.
 
-**No decisions outstanding.** `#trim-select`'s naming (4.1.2, above) resolved to a plain pass once
-the visible question was added to its `aria-labelledby` alongside the existing floating label.
+**No decisions outstanding.** `#trim-select` naming (4.1.2) resolved to a plain pass — visible
+question added to its `aria-labelledby` alongside the floating label.
 
 **One thing measurable only with a real screen reader.** CDP reports `valuetext: ""` for the SOC
-thumbs even though `aria-valuetext="20 percent"` is set — but it does that for *every* ARIA widget
-(confirmed against a control page), so it's a CDP limitation, **not** a defect. Whether
-`aria-valuetext` reaches the platform accessibility API needs an AT or an AXAPI inspector.
+thumbs despite `aria-valuetext="20 percent"` being set — true for *every* ARIA widget (confirmed
+against a control page), so a CDP limitation, **not** a defect. Whether it reaches the platform
+AX API needs an AT or AXAPI inspector.
 
 **VoiceOver, WAVE and axe DevTools have all been run manually, all clean** — see
 `a11y-2-automated-testing.md` §9. Every AI-flagged item was a false positive (heading suggestions on
-plain labels, a disabled `battery-select` correctly excluded, one `aria-checked` misread) — no
-markup changes required. **NVDA 2026.1.1.55980 remains the one gap**, a deviation not a substitute,
-owed before formal sign-off.
+plain labels, a disabled `battery-select` correctly excluded, one `aria-checked` misread); no markup
+changes required. **NVDA 2026.1.1.55980 remains the one gap** — a deviation, not a substitute, owed
+before formal sign-off.
 
 # Decisions an auditor could challenge
 
@@ -207,5 +204,5 @@ test result.
 > verified with VoiceOver, WAVE, and axe DevTools. NVDA remains the one screen-reader pass owed
 > before formal BITV/EN 301 549 sign-off."*
 
-That is stronger than a tool-clean claim, and unlike a tool-clean claim it is true — the one real
-defect found here (unnamed graphics, SC 1.1.1) was invisible to axe, WAVE and Nu alike.
+That is stronger than a tool-clean claim, and true — the one real defect found (unnamed graphics,
+SC 1.1.1) was invisible to axe, WAVE and Nu alike.

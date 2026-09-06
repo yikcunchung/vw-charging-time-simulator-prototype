@@ -45,10 +45,9 @@ assistive technology as an unnamed graphic** — it is not "decorative by defaul
 <svg role="img" aria-label="Volkswagen" width="32" height="32">…</svg>
 ```
 
-> **No scanner catches this.** `svg-img-alt` and `role-img-alt` are **inapplicable** to an `<svg>`
-> with no `role`; `image-alt` only inspects `<img>`. axe, WAVE and Nu all returned clean on pages
-> carrying up to 16 of these. **The accessibility tree is the only check that works** — assert
-> `0` nodes with `role=image` that are unnamed and not `ignored`.
+> **No scanner catches this.** `svg-img-alt`/`role-img-alt` are **inapplicable** to a roleless
+> `<svg>`; `image-alt` only inspects `<img>`. axe/WAVE/Nu all returned clean carrying up to 16 of
+> these — **only the AX tree catches it**: assert `0` unnamed, non-`ignored` `role=image` nodes.
 
 **In React:** put it in the icon component itself, so it cannot be forgotten per call site.
 
@@ -328,13 +327,10 @@ horizontal scroll is never permitted.
 Sufficient techniques: **G225** (bounded ≤320px carousel panels), **C31** (flexbox), **C32** (media
 queries + grid), **C34** (un-fix sticky).
 
-> **A bounded carousel (`overflow-x:auto`) clips outward-drawn focus rings at its edge unless given
-> room.** An `outline` at `outline-offset:0` (like a `box-shadow`) gets clipped by an ancestor's
-> `overflow`, including the container's own scroll edge. Give the carousel `padding` equal to the
-> ring width, matched by `scroll-padding-inline` so `scrollIntoView()` respects the same margin —
-> otherwise a card scrolled flush to the edge has a clipped ring despite being fully visible. Also
-> add a `focusin` handler calling `scrollIntoView({block:'nearest', inline:'nearest'})`: browsers
-> don't reliably auto-scroll a focused child inside nested `overflow-x:auto` on `Tab` alone.
+> **A bounded carousel (`overflow-x:auto`) clips outward-drawn focus rings unless given room.** Add
+> `padding` equal to the ring width (`scroll-padding-inline` matching, so `scrollIntoView()` respects
+> it), plus a `focusin` handler calling `scrollIntoView({block:'nearest', inline:'nearest'})` for
+> browsers that don't auto-scroll a focused child inside nested `overflow-x:auto` on `Tab` alone.
 
 ---
 
@@ -353,13 +349,12 @@ Nothing may newly clip, no control may be lost, no horizontal scroll may appear.
 > override `line-height`, so a 24px target built on line-height collapses under the very override
 > you are being tested against. Padding is unaffected.
 
-> **Fix the width first, not just the recovery path.** A `<select>`'s floating label can run out of
-> room under these overrides if two selects share a row. `.select-group` stacks them vertically,
-> unconditionally (this page's grid makes available width non-monotonic, so no single breakpoint
+> **Fix the width first, not just the recovery path.** `.select-group` stacks the two selects
+> vertically, unconditionally (grid makes available width non-monotonic — no single breakpoint
 > holds) — full row width everywhere, zero truncation verified.
 >
-> **Secondary, belt-and-suspenders safeguard:** wrap that select's `<option>`s in a matching
-> `<optgroup label="…">` so opening the select (its own normal operation) reveals the label in full:
+> **Secondary, belt-and-suspenders safeguard:** wrap the select's `<option>`s in a matching
+> `<optgroup label="…">` so opening the select reveals the label in full:
 > ```html
 > <select aria-labelledby="battery-fl-label">
 >   <optgroup label="Motor / Battery Capacity">
@@ -367,9 +362,8 @@ Nothing may newly clip, no control may be lost, no horizontal scroll may appear.
 >   </optgroup>
 > </select>
 > ```
-> Apply this in **every** place that rebuilds the select's `innerHTML` — a static fix alone gets
-> undone the moment options are rebuilt in JS. The optgroup is a safety net, not the primary fix: a
-> label with no matching optgroup and no layout fix has no escape — it must actually fit.
+> Apply everywhere the select's `innerHTML` is rebuilt — a static fix alone gets undone. Not the
+> primary fix: a label with no optgroup and no layout fix must actually fit.
 
 ---
 
@@ -446,9 +440,8 @@ correctly.** No native `<input type=range>` underneath — the ARIA contract *is
    close enough to fail the spacing test.
 
 > **A CDP artifact, not a defect.** `Accessibility.getPartialAXTree` reports `valuetext: ""` for
-> these thumbs even though `aria-valuetext="20 percent"` is set — but it does so for **every** ARIA
-> widget, confirmed against a control page. Whether `aria-valuetext` reaches the platform API needs
-> a real screen reader. Do not read that empty string as a failure, and do not "fix" it.
+> these thumbs despite `aria-valuetext` being set — true for **every** ARIA widget. Needs a real
+> screen reader to verify; don't read the empty string as a failure.
 
 **One clamping behaviour that looks like a bug and is not.** Driving `#soc-thumb-to` with ArrowLeft
 can leave it unchanged — because the *other* thumb has already been pushed up to the minimum gap, so
