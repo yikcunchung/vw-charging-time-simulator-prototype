@@ -1238,11 +1238,11 @@ const consumptionData = {
 window.consumptionData = consumptionData;
 const wltpData = {
   Trend_50: {
-    slow:     '9.7 kWh/62mi',
-    medium:   '10.1 kWh/62mi',
-    fast:     '12.0 kWh/62mi',
-    veryFast: '17.5 kWh/62mi',
-    combined: '13.3 kWh/62mi',
+    slow:     '9.9 kWh/62mi',
+    medium:   '10.8 kWh/62mi',
+    fast:     '12.6 kWh/62mi',
+    veryFast: '18.8 kWh/62mi',
+    combined: '14.0 kWh/62mi',
   },
 };
 window.wltpData = wltpData;
@@ -1507,10 +1507,10 @@ window.addEventListener('DOMContentLoaded', () => {
         { sectionHeader: 'Electricity' },
         { rows: [
           { label: 'Fuel consumption slow',      value: data.slow     || '–' },
-          { label: 'Medium fuel consumption',    value: data.medium   || '–' },
+          { label: 'Fuel consumption medium',    value: data.medium   || '–' },
           { label: 'Fuel consumption fast',      value: data.fast     || '–' },
           { label: 'Fuel consumption very fast', value: data.veryFast || '–' },
-          { label: 'Combined fuel consumption',  value: data.combined || '–' },
+          { label: 'Fuel consumption combined',  value: data.combined || '–' },
           { label: 'Combined CO₂ emissions',     value: '0 g/km' },
           { label: 'Efficiency class',           value: 'A' },
         ] },
