@@ -1238,13 +1238,11 @@ const consumptionData = {
 window.consumptionData = consumptionData;
 const wltpData = {
   Trend_50: {
-    combined:      '14.1 – 14.0 kWh/100 km',
-    highway:       '18.9 – 18.7 kWh/100 km',
-    countryRoads:  '12.7 – 12.6 kWh/100 km',
-    outskirts:     '10.9 – 10.8 kWh/100 km',
-    cityCenter:    '10.1 – 9.9 kWh/100 km',
-    rangeCombined: '413 – 417 km',
-    rangeCity:     '545 – 553 km',
+    slow:     '9.7 kWh/62mi',
+    medium:   '10.1 kWh/62mi',
+    fast:     '12.0 kWh/62mi',
+    veryFast: '17.5 kWh/62mi',
+    combined: '13.3 kWh/62mi',
   },
 };
 window.wltpData = wltpData;
@@ -1508,17 +1506,13 @@ window.addEventListener('DOMContentLoaded', () => {
         { link: { text: 'More about WLTP and emission standards', href: '#' } },
         { sectionHeader: 'Electricity' },
         { rows: [
-          { label: 'Hub/Motor',                                        value: batt + ' kWh' },
-          { label: 'Equipment version',                                value: trim.toLowerCase() },
-          { label: 'CO₂ emissions combined ①',                       value: '0 g/km' },
-          { label: 'Combined fuel consumption ①',                     value: data.combined      || '–' },
-          { label: 'Highway fuel consumption ①',                      value: data.highway       || '–' },
-          { label: 'Fuel consumption on country roads ①',             value: data.countryRoads  || '–' },
-          { label: 'Consumption on the outskirts of the city ①',      value: data.outskirts     || '–' },
-          { label: 'Consumption in the city center ①',                value: data.cityCenter    || '–' },
-          { label: 'Electric range combined ②',                       value: data.rangeCombined || '–' },
-          { label: 'Electric range city ②',                           value: data.rangeCity     || '–' },
-          { label: 'CO₂ class ①',                                     value: 'A' },
+          { label: 'Fuel consumption slow',      value: data.slow     || '–' },
+          { label: 'Medium fuel consumption',    value: data.medium   || '–' },
+          { label: 'Fuel consumption fast',      value: data.fast     || '–' },
+          { label: 'Fuel consumption very fast', value: data.veryFast || '–' },
+          { label: 'Combined fuel consumption',  value: data.combined || '–' },
+          { label: 'Combined CO₂ emissions',     value: '0 g/km' },
+          { label: 'Efficiency class',           value: 'A' },
         ] },
       ]
     };
