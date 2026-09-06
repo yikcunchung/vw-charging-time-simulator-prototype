@@ -437,8 +437,23 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
   opacity: 1;
   transform: translate(-50%, -50%) translateY(0px);
 }
+@media (min-width: 560px) {
+  #info-modal { width: 83.33vw; max-height: calc(100% - 40px); }
+}
 @media (min-width: 960px) {
+  #info-modal { width: 66.66vw; }
+}
+@media (min-width: 1280px) {
   #info-modal { width: 58.33vw; }
+}
+@media (min-width: 1600px) {
+  #info-modal { width: 50vw; max-height: calc(100% - 64px); }
+}
+@media (min-width: 1920px) {
+  #info-modal { width: 41.66vw; }
+}
+@media (min-width: 2560px) {
+  #info-modal { width: 1066.66px; max-height: calc(100% - 96px); }
 }
 .info-modal-header {
   display: flex; position: sticky; z-index: 1; top: 0;
