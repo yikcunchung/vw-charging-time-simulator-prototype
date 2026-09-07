@@ -108,13 +108,10 @@ skip link as the **first** tab stop, pointing at an id that exists.
 
 ---
 
-### SC 1.3.1 — Each FAQ item is a `role="group"` around its question and answer
+### Each FAQ item is a `role="group"` — reference-build parity, not an SC 1.3.1 requirement
 
-**Level A**
-
-`div.faq-item[role="group"]` wraps each of the 4 question/answer pairs. Without it a screen
-reader hears an isolated expand/collapse button, with no cue it belongs to a set — `role="group"`
-gives the pair a container an AT can announce membership in.
+`div.faq-item[role="group"]` wraps each of the 4 question/answer pairs, matching the reference
+build's VoiceOver output (a "group" cue on entry/exit). Not itself required by SC 1.3.1 — `aria-expanded`/`aria-controls` already make the button-panel relationship programmatically determinable without it; the gap it closes is VoiceOver's own group-boundary cue, not a WCAG failure.
 
 ---
 
